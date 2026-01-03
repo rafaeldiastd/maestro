@@ -216,6 +216,13 @@ const linkCopied = ref(false)
 
 // --- Lifecycle ---
 onMounted(async () => {
+  // 0. Check User Auth
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    router.push('/')
+    return
+  }
+
   // 1. Verify Session & Ownership
   const { data: session, error } = await supabase
     .from('sessions')
@@ -226,6 +233,13 @@ onMounted(async () => {
   if (error || !session) {
     console.error('Session Init Error:', error)
     alert('Session not found or access denied.')
+    router.push('/dashboard')
+    return
+  }
+
+  // 2. Strict Ownership Check
+  if (session.owner_id !== user.id) {
+    console.warn('Unauthorized access attempt to session:', sessionId)
     router.push('/dashboard')
     return
   }
@@ -383,12 +397,22 @@ const deleteAsset = async (asset) => {
   if (!confirm('Delete this image?')) return
 
   // 1. Delete DB
-  await supabase.from('session_assets').delete().eq('id', asset.id)
+  const { error: dbError } = await supabase.from('session_assets').delete().eq('id', asset.id)
+  
+  if (dbError) {
+    alert('Failed to delete asset from database: ' + dbError.message)
+    return
+  }
 
-  // 2. Delete Storage (Optional but good hygiene)
-  // await supabase.storage.from(bucketName).remove([asset.storage_path])
+  // 2. Delete Storage
+  const { error: storageError } = await supabase.storage.from(bucketName).remove([asset.storage_path])
+  
+  if (storageError) {
+    console.error('Failed to delete file from storage:', storageError)
+    // Optional: alert user, but the item is gone from the UI anyway
+  }
 
-  fetchAssets() // Optimistic update ideally, but fetch is safe
+  fetchAssets() 
 }
 
 const broadcastImage = async () => {
