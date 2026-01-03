@@ -53,6 +53,20 @@
 
           <button @click="copyJoinLink"
             class="w-full rounded bg-stone-700/50 py-1.5 text-xs font-medium text-stone-200 hover:bg-stone-700 transition-colors flex items-center justify-center gap-2">
+            <svg v-if="!linkJoinCopied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            {{ linkJoinCopied ? 'Link Copied!' : 'Copy Player Link' }}
+          </button>
+
+          <button @click="copyStreamLink"
+            class="w-full rounded bg-stone-700/50 py-1.5 text-xs font-medium text-stone-200 hover:bg-stone-700 transition-colors flex items-center justify-center gap-2">
             <svg v-if="!linkCopied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -62,23 +76,13 @@
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
-            {{ linkCopied ? 'Link Copied!' : 'Copy Player Link' }}
+            {{ linkCopied ? 'Link Copied!' : 'Copy Stream Link' }}
           </button>
         </div>
 
         <div class="space-y-1">
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Settings</p>
-          <button @click="showSettings = true"
-            class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path
-                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-              </path>
-            </svg>
-            Storage & Keys
-          </button>
+
           <button @click="endSession"
             class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs text-red-400 hover:bg-slate-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -196,7 +200,7 @@
       @show-stream="restoreStream" />
 
   </div>
-  <SettingsModal :isOpen="showSettings" @close="showSettings = false" />
+
 </template>
 
 <script setup>
@@ -206,7 +210,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useStorage } from '../composables/useStorage'
 import imageCompression from 'browser-image-compression'
 import Lightbox from '../components/Lightbox.vue'
-import SettingsModal from '../components/SettingsModal.vue'
+
 
 // --- State ---
 const route = useRoute()
@@ -221,13 +225,14 @@ const lightboxAsset = ref(null)
 const showSettings = ref(false)
 const streamHiddenState = ref(false)
 
-const { storage, providerType } = useStorage()
+const { storage, providerType, setConfig } = useStorage()
 const channel = ref(null)
 
 // Upload State
 const isUploading = ref(false)
 const uploadStatus = ref('')
 const linkCopied = ref(false)
+const linkJoinCopied = ref(false)
 
 // --- Lifecycle ---
 onMounted(async () => {
@@ -260,6 +265,13 @@ onMounted(async () => {
   }
 
   sessionName.value = session.name
+
+  // Initialize Storage from Session Config
+  // Default to supabase if new fields are missing (legacy support)
+  const sProvider = session.storage_provider || 'supabase'
+  const sConfig = session.storage_config || {}
+  setConfig(sProvider, sConfig)
+
   setupRealtime()
   // Ensure DB is in sync with actual files (auto-heal)
   await syncStorageToDb()
@@ -375,7 +387,7 @@ const handleUploads = async (files) => {
       if (storageError) throw storageError
 
       // 3. Register DB
-      const { error: dbError } = await supabase
+      const { data: newAsset, error: dbError } = await supabase
         .from('session_assets')
         .insert({
           session_id: sessionId,
@@ -383,8 +395,15 @@ const handleUploads = async (files) => {
           storage_path: uploadedPath, // Save the path returned by provider (Supabase: path, Cloudinary: public_id)
           is_revealed: false
         })
+        .select()
+        .single()
 
       if (dbError) throw dbError
+
+      // Add to grid immediately
+      if (newAsset) {
+        assets.value.unshift(newAsset)
+      }
 
     } catch (e) {
       console.error('Upload Failed:', e)
@@ -394,7 +413,7 @@ const handleUploads = async (files) => {
 
   isUploading.value = false
   uploadStatus.value = ''
-  fetchAssets() // Refresh grid
+  // fetchAssets() // No longer needed as we update locally
 }
 
 // --- Actions ---
@@ -576,6 +595,13 @@ const getDisplayName = (fullName) => {
 
 const copyJoinLink = () => {
   const link = `${window.location.origin}/join/${sessionId}`
+  navigator.clipboard.writeText(link)
+  linkJoinCopied.value = true
+  setTimeout(() => linkCopied.value = false, 2000)
+}
+
+const copyStreamLink = () => {
+  const link = `${window.location.origin}/stream/${sessionId}`
   navigator.clipboard.writeText(link)
   linkCopied.value = true
   setTimeout(() => linkCopied.value = false, 2000)

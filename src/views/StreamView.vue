@@ -21,16 +21,30 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '../lib/supabaseClient'
+import { useStorage } from '../composables/useStorage'
 
 const route = useRoute()
 const sessionId = route.params.id
 
+const { storage, setConfig } = useStorage()
+
 const currentImage = ref(null)
 const isConnected = ref(false)
-const bucketName = 'images'
 
-onMounted(() => {
+onMounted(async () => {
     if (!sessionId) return
+
+    // 0. Initialize Storage
+    const { data: session } = await supabase
+        .from('sessions')
+        .select('storage_provider, storage_config')
+        .eq('id', sessionId)
+        .single()
+
+    if (session) {
+        setConfig(session.storage_provider || 'supabase', session.storage_config || {})
+    }
+
     setupRealtime()
 })
 
@@ -45,8 +59,7 @@ const setupRealtime = () => {
                 // Fallback for legacy broadcasts or if url missing
                 if (!url && payload.imgName) {
                     const path = payload.path || `sessions/${sessionId}/${payload.imgName}`
-                    const { data } = supabase.storage.from(bucketName).getPublicUrl(path)
-                    url = data.publicUrl
+                    url = storage.value.getUrl(path)
                 }
 
                 // Replace current image with new one

@@ -62,22 +62,34 @@ import { useRoute } from 'vue-router'
 import { supabase } from '../lib/supabaseClient'
 import Lightbox from '../components/Lightbox.vue'
 
+import { useStorage } from '../composables/useStorage'
+
 const route = useRoute()
 const sessionId = route.params.id // Using params from /join/:id
+
+const { storage, setConfig } = useStorage()
 
 const images = ref([])
 const loading = ref(true)
 const error = ref(null)
 const isConnected = ref(false)
-// const lightboxUrl = ref(null) -> Replaced by lightboxAsset in script action
-
-const bucketName = 'images'
 
 onMounted(async () => {
   if (!sessionId) {
     error.value = { title: 'Invalid Link', msg: 'Missing Session ID.' }
     loading.value = false
     return
+  }
+
+  // 0. Initialize Storage for this Session
+  const { data: session } = await supabase
+    .from('sessions')
+    .select('storage_provider, storage_config')
+    .eq('id', sessionId)
+    .single()
+
+  if (session) {
+    setConfig(session.storage_provider || 'supabase', session.storage_config || {})
   }
 
   // 1. Load History
@@ -142,12 +154,12 @@ const addImage = (name, path, open = false, displayName = null) => {
   }
 
   // Get Public URL
-  const { data } = supabase.storage.from(bucketName).getPublicUrl(path)
+  const publicUrl = storage.value.getUrl(path)
 
   const imgObj = {
     name: name,
     displayName: displayName || getDisplayName(name), // Fallback
-    url: data.publicUrl
+    url: publicUrl
   }
 
   images.value.push(imgObj)

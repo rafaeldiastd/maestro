@@ -105,6 +105,54 @@
                         <input v-model="newSessionName" type="text" required placeholder="Ex: Curse of Strahd"
                             class="w-full rounded bg-slate-800 border border-slate-600 px-3 py-2 text-white focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400">
                     </div>
+
+                    <!-- Storage Provider Selection -->
+                    <div class="mb-4 space-y-3">
+                        <label class="block text-sm font-medium text-slate-400">Storage Provider</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" v-model="providerType" value="supabase" class="accent-stone-400">
+                                <span class="text-sm text-slate-300">Supabase (Default)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" v-model="providerType" value="cloudinary" class="accent-stone-400">
+                                <span class="text-sm text-slate-300">Cloudinary</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Cloudinary Config -->
+                    <div v-if="providerType === 'cloudinary'"
+                        class="mb-4 space-y-3 p-3 rounded bg-slate-800/50 border border-slate-700">
+                        <p class="text-xs text-slate-500 mb-2">Cloudinary Settings</p>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-400">Cloud Name *</label>
+                                <input v-model="cloudinaryConfig.cloudName" type="text" required placeholder="demo"
+                                    class="w-full mt-1 rounded bg-slate-900 border border-slate-600 p-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400">Upload Preset *</label>
+                                <input v-model="cloudinaryConfig.uploadPreset" type="text" required
+                                    placeholder="unsigned_preset"
+                                    class="w-full mt-1 rounded bg-slate-900 border border-slate-600 p-2 text-xs text-white">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-400">API Key (Optional)</label>
+                                <input v-model="cloudinaryConfig.apiKey" type="text" placeholder="For file deletion"
+                                    class="w-full mt-1 rounded bg-slate-900 border border-slate-600 p-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400">API Secret (Optional)</label>
+                                <input v-model="cloudinaryConfig.apiSecret" type="password"
+                                    placeholder="For file deletion"
+                                    class="w-full mt-1 rounded bg-slate-900 border border-slate-600 p-2 text-xs text-white">
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex items-center justify-end gap-3">
                         <button type="button" @click="showNewSessionModal = false"
                             class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white">Cancel</button>
@@ -132,6 +180,13 @@ const userEmail = ref('')
 const showNewSessionModal = ref(false)
 const newSessionName = ref('')
 const creating = ref(false)
+const providerType = ref('supabase')
+const cloudinaryConfig = ref({
+    cloudName: '',
+    uploadPreset: '',
+    apiKey: '',
+    apiSecret: ''
+})
 
 const userId = ref('')
 
@@ -166,12 +221,16 @@ const createSession = async () => {
     if (!newSessionName.value) return
     creating.value = true
 
+    const config = providerType.value === 'cloudinary' ? { ...cloudinaryConfig.value } : {}
+
     const { data, error } = await supabase
         .from('sessions')
         .insert({
             name: newSessionName.value,
             owner_id: userId.value,
-            status: 'active'
+            status: 'active',
+            storage_provider: providerType.value,
+            storage_config: config
         })
         .select()
         .single() // Return the created row
@@ -183,6 +242,10 @@ const createSession = async () => {
     } else {
         showNewSessionModal.value = false
         newSessionName.value = ''
+        // Reset config
+        providerType.value = 'supabase'
+        cloudinaryConfig.value = { cloudName: '', uploadPreset: '', apiKey: '', apiSecret: '' }
+
         sessions.value.unshift(data)
     }
 }
