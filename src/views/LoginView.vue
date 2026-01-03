@@ -3,9 +3,9 @@
         class="flex min-h-screen w-full items-center justify-center bg-lumina-bg text-lumina-text relative overflow-hidden">
 
         <!-- Background Decor -->
-        <div class="absolute top-[-20%] left-[-10%] h-[500px] w-[500px] rounded-full bg-purple-600/20 blur-[100px]">
+        <div class="absolute top-[-20%] left-[-10%] h-[500px] w-[500px] rounded-full bg-stone-500/10 blur-[100px]">
         </div>
-        <div class="absolute bottom-[-20%] right-[-10%] h-[500px] w-[500px] rounded-full bg-indigo-600/20 blur-[100px]">
+        <div class="absolute bottom-[-20%] right-[-10%] h-[500px] w-[500px] rounded-full bg-stone-500/10 blur-[100px]">
         </div>
 
         <div
@@ -13,8 +13,9 @@
 
             <!-- Brand -->
             <div class="mb-8 text-center">
+
                 <h1
-                    class="text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                    class="text-4xl font-bold tracking-tight bg-gradient-to-r from-stone-200 to-stone-500 bg-clip-text text-transparent mb-2">
                     Lumina
                 </h1>
                 <p class="text-slate-400">Immersive RPG Image Broadcasting</p>
@@ -37,19 +38,19 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Email</label>
                     <input v-model="email" type="email" required
-                        class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600"
+                        class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-white focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 transition-all placeholder:text-slate-600"
                         placeholder="gandalf@middle-earth.com">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Password</label>
                     <input v-model="password" type="password" required minlength="6"
-                        class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600"
+                        class="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-white focus:border-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 transition-all placeholder:text-slate-600"
                         placeholder="••••••••">
                 </div>
 
                 <button type="submit" :disabled="loading"
-                    class="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 font-semibold text-white shadow-lg hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    class="w-full rounded-lg bg-stone-100 px-4 py-2.5 font-semibold text-stone-900 shadow-lg hover:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                     <span v-if="loading" class="flex items-center justify-center gap-2">
                         <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
@@ -69,12 +70,12 @@
                 <p v-if="!isSignUp">
                     Don't have an account?
                     <button @click="isSignUp = true; errorMsg = ''"
-                        class="text-indigo-400 hover:text-indigo-300 font-medium">Sign Up</button>
+                        class="text-stone-400 hover:text-white font-medium">Sign Up</button>
                 </p>
                 <p v-else>
                     Already have an account?
                     <button @click="isSignUp = false; errorMsg = ''"
-                        class="text-indigo-400 hover:text-indigo-300 font-medium">Sign In</button>
+                        class="text-stone-400 hover:text-white font-medium">Sign In</button>
                 </p>
             </div>
 

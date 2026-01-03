@@ -2,21 +2,28 @@
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
     <div class="bg-lumina-card w-full max-w-md rounded-xl border border-slate-700 p-6 shadow-2xl">
       <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-xl font-semibold text-indigo-400">Live Session Created!</h2>
+        <h2 class="text-xl font-semibold text-stone-200">Live Session Created!</h2>
         <button @click="$emit('close')" class="text-slate-400 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
-      
+
       <div class="space-y-4">
         <p class="text-slate-300">Share this link with your players:</p>
         <div class="flex gap-2">
-          <input :value="link" readonly @click="$event.target.select()" class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white outline-none">
-          <button @click="copy" class="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-500">
+          <input :value="link" readonly @click="$event.target.select()"
+            class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white outline-none">
+          <button @click="copy"
+            class="rounded-lg bg-stone-100 px-4 py-2 font-medium text-stone-900 hover:bg-white border border-stone-200">
             {{ copied ? 'Copied!' : 'Copy' }}
           </button>
         </div>
-        <p class="text-xs text-slate-500">Images are uploaded. Click an image and use "Transmit" to show it to players.</p>
+        <p class="text-xs text-slate-500">Images are uploaded. Click an image and use "Transmit" to show it to players.
+        </p>
       </div>
     </div>
   </div>

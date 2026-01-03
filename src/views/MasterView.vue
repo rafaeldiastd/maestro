@@ -14,7 +14,7 @@
           Back to Dashboard
         </button>
         <h1
-          class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          class="text-xl font-bold tracking-tight bg-gradient-to-r from-stone-200 to-stone-500 bg-clip-text text-transparent">
           {{ sessionName || 'Loading...' }}
           <span class="text-xs font-normal text-slate-500 block">Session Control</span>
         </h1>
@@ -25,16 +25,16 @@
 
         <!-- Droppable Uploader -->
         <div
-          class="group relative flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-700 bg-slate-800/50 transition-colors hover:border-indigo-500 hover:bg-slate-800"
+          class="group relative flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-700 bg-slate-800/50 transition-colors hover:border-stone-400 hover:bg-slate-800"
           :class="isUploading ? 'pointer-events-none opacity-50' : ''" @click="$refs.fileInput.click()"
           @dragover.prevent @drop.prevent="onFileDrop">
           <input type="file" ref="fileInput" multiple hidden @change="onFileChange" accept="image/*">
 
           <div v-if="isUploading" class="flex flex-col items-center gap-2">
-            <div class="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+            <div class="h-6 w-6 animate-spin rounded-full border-2 border-stone-500 border-t-transparent"></div>
             <span class="text-xs font-medium text-slate-400">{{ uploadStatus }}</span>
           </div>
-          <div v-else class="flex flex-col items-center gap-2 text-slate-400 group-hover:text-indigo-400">
+          <div v-else class="flex flex-col items-center gap-2 text-slate-400 group-hover:text-stone-200">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -46,13 +46,13 @@
         </div>
 
         <!-- Session Code -->
-        <div class="rounded bg-indigo-500/10 border border-indigo-500/20 p-3 space-y-2">
-          <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-indigo-200">
+        <div class="rounded bg-stone-800 border border-stone-700 p-3 space-y-2">
+          <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-stone-400">
             <span class="font-mono">{{ sessionId }}</span>
           </div>
 
           <button @click="copyJoinLink"
-            class="w-full rounded bg-indigo-600/20 py-1.5 text-xs font-medium text-indigo-300 hover:bg-indigo-600/30 transition-colors flex items-center justify-center gap-2">
+            class="w-full rounded bg-stone-700/50 py-1.5 text-xs font-medium text-stone-200 hover:bg-stone-700 transition-colors flex items-center justify-center gap-2">
             <svg v-if="!linkCopied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -91,9 +91,9 @@
         class="flex h-14 items-center justify-between border-b border-slate-800 px-6 bg-lumina-bg/80 backdrop-blur">
         <div class="flex items-center gap-4 text-sm font-medium text-slate-400">
           <button @click="viewMode = 'grid'"
-            :class="viewMode === 'grid' ? 'text-indigo-400' : 'hover:text-white'">Grid</button>
+            :class="viewMode === 'grid' ? 'text-white' : 'hover:text-white'">Grid</button>
           <button @click="viewMode = 'small'"
-            :class="viewMode === 'small' ? 'text-indigo-400' : 'hover:text-white'">Small</button>
+            :class="viewMode === 'small' ? 'text-white' : 'hover:text-white'">Small</button>
           <div class="h-4 w-px bg-slate-700"></div>
           <button @click="toggleBlur" :class="blurMode ? 'text-yellow-400' : 'hover:text-white'"
             class="flex items-center gap-1">
@@ -398,7 +398,7 @@ const deleteAsset = async (asset) => {
 
   // 1. Delete DB
   const { error: dbError } = await supabase.from('session_assets').delete().eq('id', asset.id)
-  
+
   if (dbError) {
     alert('Failed to delete asset from database: ' + dbError.message)
     return
@@ -406,13 +406,13 @@ const deleteAsset = async (asset) => {
 
   // 2. Delete Storage
   const { error: storageError } = await supabase.storage.from(bucketName).remove([asset.storage_path])
-  
+
   if (storageError) {
     console.error('Failed to delete file from storage:', storageError)
     // Optional: alert user, but the item is gone from the UI anyway
   }
 
-  fetchAssets() 
+  fetchAssets()
 }
 
 const broadcastImage = async () => {
@@ -535,7 +535,7 @@ const getAssetUrl = (asset) => {
 
 const getCardClasses = (asset) => {
   if (asset.is_revealed) return 'ring-2 ring-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
-  return 'ring-slate-700 hover:ring-indigo-500'
+  return 'ring-slate-700 hover:ring-stone-400'
 }
 
 const getDisplayName = (fullName) => {

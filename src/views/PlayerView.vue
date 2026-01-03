@@ -22,11 +22,11 @@
         </svg>
         <h2 class="mt-4 text-lg font-semibold">{{ error.title }}</h2>
         <p class="text-sm opacity-80">{{ error.msg }}</p>
-        <a href="/" class="mt-4 text-indigo-400 hover:text-white underline text-sm">Create your own session</a>
+        <a href="/" class="mt-4 text-stone-400 hover:text-white underline text-sm">Create your own session</a>
       </div>
 
       <div v-else-if="loading" class="flex justify-center pt-20">
-        <div class="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-stone-500 border-t-transparent"></div>
       </div>
 
       <div v-else-if="images.length === 0" class="flex flex-col items-center justify-center pt-40 text-slate-600">
@@ -41,7 +41,7 @@
 
       <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         <div v-for="img in images" :key="img.name"
-          class="aspect-square cursor-pointer overflow-hidden rounded-lg bg-slate-800 ring-1 ring-slate-700 transition-all hover:ring-indigo-500 hover:scale-105 relative group"
+          class="aspect-square cursor-pointer overflow-hidden rounded-lg bg-slate-800 ring-1 ring-slate-700 transition-all hover:ring-stone-400 hover:scale-105 relative group"
           @click="openLightbox(img)">
           <img :src="img.url" loading="lazy" class="h-full w-full object-cover">
           <div class="absolute bottom-0 inset-x-0 bg-black/60 p-1 text-xs text-white text-center truncate">
