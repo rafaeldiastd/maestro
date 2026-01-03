@@ -133,6 +133,8 @@ const showNewSessionModal = ref(false)
 const newSessionName = ref('')
 const creating = ref(false)
 
+const userId = ref('')
+
 onMounted(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -140,6 +142,7 @@ onMounted(async () => {
         return
     }
     userEmail.value = user.email
+    userId.value = user.id
     fetchSessions()
 })
 
@@ -148,6 +151,7 @@ const fetchSessions = async () => {
     const { data, error } = await supabase
         .from('sessions')
         .select('*')
+        .eq('owner_id', userId.value)
         .order('created_at', { ascending: false })
 
     if (error) {
@@ -162,13 +166,11 @@ const createSession = async () => {
     if (!newSessionName.value) return
     creating.value = true
 
-    const { data: { user } } = await supabase.auth.getUser()
-
     const { data, error } = await supabase
         .from('sessions')
         .insert({
             name: newSessionName.value,
-            owner_id: user.id,
+            owner_id: userId.value,
             status: 'active'
         })
         .select()
