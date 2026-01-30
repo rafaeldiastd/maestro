@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { createStorage } from '../lib/storage'
+import { createStorage } from '@/lib/storage'
 
 const currentProvider = ref(null)
 const providerType = ref('supabase')
