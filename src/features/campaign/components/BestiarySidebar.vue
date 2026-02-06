@@ -30,9 +30,9 @@ const filteredNpcs = computed(() => {
 </script>
 
 <template>
-   <div class="flex flex-col h-full">
+   <div class="flex flex-col h-full bg-card border-l border-border">
       <!-- Header -->
-      <div class="p-4 border-b border-lumina-border shrink-0 space-y-3 bg-lumina-bg/50">
+      <div class="p-4 border-b border-lumina-border shrink-0 space-y-3 bg-card">
          <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                <h2 class="text-sm font-bold font-serif text-lumina-text tracking-wide flex items-center gap-2">
@@ -98,7 +98,7 @@ const filteredNpcs = computed(() => {
                      </DropdownMenuItem>
                      <DropdownMenuSeparator class="bg-lumina-border" />
                      <DropdownMenuItem @click.stop="$emit('delete', npc)"
-                        class="text-red-400 focus:text-red-300 focus:bg-red-950/30">
+                        class="text-destructive focus:text-destructive focus:bg-destructive/10">
                         <Trash2 class="mr-2 h-3 w-3" /> Excluir
                      </DropdownMenuItem>
                   </DropdownMenuContent>

@@ -1,103 +1,63 @@
 <template>
-  <div class="h-full w-full bg-lumina-bg flex flex-col">
+  <div class="h-full w-full bg-background flex flex-col">
     <!-- Navbar with Maps List -->
-    <div class="h-14 border-b border-lumina-border bg-lumina-card flex items-center justify-between px-4 shrink-0">
+    <div class="h-14 border-b border-border bg-card flex items-center justify-between px-4 shrink-0">
       <div class="flex items-center gap-3 flex-1 min-w-0">
         <Button @click="$emit('close')" variant="default" size="sm" class="gap-2 shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
+          <ArrowLeft class="h-4 w-4" />
           Back
         </Button>
 
-        <div class="h-6 w-px bg-lumina-border shrink-0"></div>
+        <div class="h-6 w-px bg-border shrink-0"></div>
 
         <!-- Maps Dropdown -->
-        <select 
-          :value="map.id" 
-          @change="$emit('change-map', $event.target.value)"
-          class="bg-lumina-bg border border-lumina-border rounded px-3 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none min-w-0 max-w-xs"
-        >
+        <select :value="map.id" @change="$emit('change-map', $event.target.value)"
+          class="bg-background border border-border rounded px-3 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none min-w-0 max-w-xs">
           <option v-for="m in allMaps" :key="m.id" :value="m.id">
             {{ m.name }} {{ m.is_active ? '(Active)' : '' }}
           </option>
         </select>
 
         <Button @click="$emit('create-map')" variant="default" size="sm" class="gap-2 shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          <Plus class="h-3.5 w-3.5" />
           New Map
         </Button>
       </div>
 
       <div class="flex items-center gap-3 shrink-0">
         <!-- Grid Toggle -->
-        <Button 
-          @click="gridVisible = !gridVisible" 
-          :variant="gridVisible ? 'default' : 'default'" 
-          size="sm"
-          class="gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" />
-          </svg>
+        <Button @click="gridVisible = !gridVisible" :variant="gridVisible ? 'default' : 'secondary'" size="sm"
+          class="gap-2">
+          <Grid3X3 class="h-3.5 w-3.5" />
           Grid
         </Button>
 
-        <div class="h-6 w-px bg-lumina-border"></div>
+        <div class="h-6 w-px bg-border"></div>
 
         <!-- Zoom -->
-        <div class="flex items-center gap-1 px-2 py-1 bg-lumina-bg rounded">
-          <Button @click="handleZoom(-1)" variant="default" size="sm" class="h-7 w-7 p-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35M8 11h6" />
-            </svg>
+        <div class="flex items-center gap-1 px-2 py-1 bg-background rounded">
+          <Button @click="handleZoom(-1)" variant="ghost" size="sm" class="h-7 w-7 p-0">
+            <ZoomOut class="h-3.5 w-3.5" />
           </Button>
-          <span class="text-xs font-mono w-12 text-center text-lumina-text">{{ Math.round(camera.zoom * 100) }}%</span>
-          <Button @click="handleZoom(1)" variant="default" size="sm" class="h-7 w-7 p-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
-            </svg>
+          <span class="text-xs font-mono w-12 text-center text-foreground">{{ Math.round(camera.zoom * 100) }}%</span>
+          <Button @click="handleZoom(1)" variant="ghost" size="sm" class="h-7 w-7 p-0">
+            <ZoomIn class="h-3.5 w-3.5" />
           </Button>
         </div>
 
-        <div class="h-6 w-px bg-lumina-border"></div>
+        <div class="h-6 w-px bg-border"></div>
 
         <!-- Activate Map -->
-        <Button 
-          @click="toggleMapActive"
-          :variant="map.is_active ? 'default' : 'outline'"
-          size="sm"
-          class="gap-2"
-          :class="map.is_active ? 'bg-green-600 hover:bg-green-700 text-white' : ''"
-        >
-          <svg v-if="map.is_active" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+        <Button @click="toggleMapActive" :variant="map.is_active ? 'default' : 'outline'" size="sm" class="gap-2"
+          :class="map.is_active ? 'bg-green-600 hover:bg-green-700 text-white' : ''">
+          <Check v-if="map.is_active" class="h-3.5 w-3.5" />
           {{ map.is_active ? 'Active' : 'Activate' }}
         </Button>
 
         <!-- Settings Toggle -->
-        <Button 
-          @click="settingsOpen = !settingsOpen"
-          :variant="settingsOpen ? 'default' : 'outline'"
-          size="sm"
-          class="gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24" />
-          </svg>
+        <Button @click="settingsOpen = !settingsOpen" :variant="settingsOpen ? 'default' : 'outline'" size="sm"
+          class="gap-2">
+          <Settings class="h-3.5 w-3.5" />
           Settings
         </Button>
       </div>
@@ -106,198 +66,127 @@
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Canvas -->
-      <div class="flex-1 relative overflow-hidden bg-lumina-bg" 
-        @mousedown="handleMouseDown" 
-        @mousemove="handleMouseMove" 
-        @mouseup="handleMouseUp" 
-        @wheel="handleWheel"
-      >
+      <div class="flex-1 relative overflow-hidden bg-background" @mousedown="handleMouseDown"
+        @mousemove="handleMouseMove" @mouseup="handleMouseUp" @wheel="handleWheel">
         <canvas ref="canvasRef" class="w-full h-full cursor-default"></canvas>
       </div>
 
       <!-- Grid Settings Sidebar -->
-      <div 
-        v-if="settingsOpen"
-        class="w-80 border-l border-lumina-border bg-lumina-card flex flex-col overflow-hidden"
-      >
-        <div class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4">
-          <h3 class="font-bold text-sm font-inknut text-lumina-text">Grid Settings</h3>
-          <Button @click="settingsOpen = false" variant="default" size="sm" class="h-7 w-7 p-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
+      <div v-if="settingsOpen" class="w-80 border-l border-border bg-card flex flex-col overflow-hidden">
+        <div class="h-14 shrink-0 border-b border-border flex items-center justify-between px-4">
+          <h3 class="font-bold text-sm font-serif text-foreground">Grid Settings</h3>
+          <Button @click="settingsOpen = false" variant="ghost" size="sm" class="h-7 w-7 p-0">
+            <X class="h-4 w-4" />
           </Button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 space-y-6">
           <!-- Grid Dimensions -->
           <div class="space-y-3">
-            <h4 class="text-xs font-bold text-lumina-text-muted uppercase tracking-wider">Grid Dimensions</h4>
-            
+            <h4 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Grid Dimensions</h4>
+
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Columns</label>
-                <input 
-                  v-model.number="gridCols"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="1"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Columns</label>
+                <input v-model.number="gridCols" @change="updateGridSettings" type="number" min="1"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Rows</label>
-                <input 
-                  v-model.number="gridRows"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="1"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Rows</label>
+                <input v-model.number="gridRows" @change="updateGridSettings" type="number" min="1"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
             </div>
           </div>
 
           <!-- Cell Size -->
           <div class="space-y-3">
-            <h4 class="text-xs font-bold text-lumina-text-muted uppercase tracking-wider">Cell Size</h4>
-            
+            <h4 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Cell Size</h4>
+
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Width (px)</label>
-                <input 
-                  v-model.number="gridCellWidth"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="10"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Width (px)</label>
+                <input v-model.number="gridCellWidth" @change="updateGridSettings" type="number" min="10"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Height (px)</label>
-                <input 
-                  v-model.number="gridCellHeight"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="10"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Height (px)</label>
+                <input v-model.number="gridCellHeight" @change="updateGridSettings" type="number" min="10"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
             </div>
           </div>
 
           <!-- Offsets (Gaps) -->
           <div class="space-y-3">
-            <h4 class="text-xs font-bold text-lumina-text-muted uppercase tracking-wider">Offsets (Gap)</h4>
-            
+            <h4 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Offsets (Gap)</h4>
+
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Left (px)</label>
-                <input 
-                  v-model.number="gridOffsetLeft"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="0"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Left (px)</label>
+                <input v-model.number="gridOffsetLeft" @change="updateGridSettings" type="number" min="0"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Right (px)</label>
-                <input 
-                  v-model.number="gridOffsetRight"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="0"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Right (px)</label>
+                <input v-model.number="gridOffsetRight" @change="updateGridSettings" type="number" min="0"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Top (px)</label>
-                <input 
-                  v-model.number="gridOffsetTop"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="0"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Top (px)</label>
+                <input v-model.number="gridOffsetTop" @change="updateGridSettings" type="number" min="0"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Bottom (px)</label>
-                <input 
-                  v-model.number="gridOffsetBottom"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="0"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                <label class="text-xs text-muted-foreground">Bottom (px)</label>
+                <input v-model.number="gridOffsetBottom" @change="updateGridSettings" type="number" min="0"
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
             </div>
           </div>
 
           <!-- Line Settings -->
           <div class="space-y-3">
-            <h4 class="text-xs font-bold text-lumina-text-muted uppercase tracking-wider">Line Settings</h4>
-            
+            <h4 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Line Settings</h4>
+
             <div class="space-y-3">
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Color</label>
+                <label class="text-xs text-muted-foreground">Color</label>
                 <div class="flex gap-2">
-                  <input 
-                    v-model="gridColor"
-                    @change="updateGridSettings"
-                    type="color"
-                    class="h-9 w-16 rounded border border-lumina-border cursor-pointer"
-                  />
-                  <input 
-                    v-model="gridColor"
-                    @change="updateGridSettings"
-                    type="text"
-                    class="flex-1 bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none font-mono"
-                  />
+                  <input v-model="gridColor" @change="updateGridSettings" type="color"
+                    class="h-9 w-16 rounded border border-border cursor-pointer" />
+                  <input v-model="gridColor" @change="updateGridSettings" type="text"
+                    class="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none font-mono" />
                 </div>
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Width (px)</label>
-                <input 
-                  v-model.number="gridLineWidth"
-                  @change="updateGridSettings"
-                  type="number"
-                  min="1"
-                  max="10"
+                <label class="text-xs text-muted-foreground">Width (px)</label>
+                <input v-model.number="gridLineWidth" @change="updateGridSettings" type="number" min="1" max="10"
                   step="0.5"
-                  class="w-full bg-lumina-bg border border-lumina-border rounded px-2 py-1.5 text-sm text-lumina-text focus:border-lumina-detail focus:outline-none"
-                />
+                  class="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none" />
               </div>
 
               <div class="space-y-1">
-                <label class="text-xs text-lumina-text-muted">Opacity</label>
+                <label class="text-xs text-muted-foreground">Opacity</label>
                 <div class="flex items-center gap-3">
-                  <input 
-                    v-model.number="gridOpacity"
-                    @input="updateGridSettings"
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    class="flex-1"
-                  />
-                  <span class="text-xs font-mono w-12 text-lumina-text">{{ Math.round(gridOpacity * 100) }}%</span>
+                  <input v-model.number="gridOpacity" @input="updateGridSettings" type="range" min="0" max="1"
+                    step="0.05" class="flex-1" />
+                  <span class="text-xs font-mono w-12 text-foreground">{{ Math.round(gridOpacity * 100) }}%</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Map Info -->
-          <div class="space-y-3 pt-3 border-t border-lumina-border">
-            <h4 class="text-xs font-bold text-lumina-text-muted uppercase tracking-wider">Map Info</h4>
-            <div class="text-xs text-lumina-text-muted space-y-1">
+          <div class="space-y-3 pt-3 border-t border-border">
+            <h4 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Map Info</h4>
+            <div class="text-xs text-muted-foreground space-y-1">
               <p>Image: {{ mapWidth }}×{{ mapHeight }}px</p>
               <p>Grid Area: {{ gridAreaWidth }}×{{ gridAreaHeight }}px</p>
             </div>
@@ -312,6 +201,16 @@
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { useMapEditor } from '@/composables/useMapEditor'
 import { Button } from '@/components/ui/button'
+import {
+  ArrowLeft,
+  Plus,
+  Grid3X3,
+  ZoomIn,
+  ZoomOut,
+  Check,
+  Settings,
+  X
+} from 'lucide-vue-next'
 
 const props = defineProps({
   map: { type: Object, required: true },
@@ -370,9 +269,9 @@ let animationFrameId = null
 onMounted(async () => {
   await nextTick()
   if (!canvasRef.value) return
-  
+
   initCanvas(canvasRef.value, props.map.settings)
-  
+
   // Set grid settings from map
   gridColor.value = props.map.grid_color || '#ffffff'
   gridOpacity.value = props.map.grid_opacity !== undefined ? props.map.grid_opacity : 0.3
@@ -402,7 +301,7 @@ const startRenderLoop = () => {
 
 const renderCanvas = () => {
   if (!canvasRef.value) return
-  
+
   const ctx = canvasRef.value.getContext('2d')
   const w = canvasRef.value.width
   const h = canvasRef.value.height
@@ -438,7 +337,7 @@ const drawGrid = (ctx) => {
   const startY = gridOffsetTop.value
   const endX = mapWidth.value - gridOffsetRight.value
   const endY = mapHeight.value - gridOffsetBottom.value
-  
+
   ctx.strokeStyle = gridColor.value
   ctx.globalAlpha = gridOpacity.value
   ctx.lineWidth = gridLineWidth.value / camera.value.zoom
@@ -516,10 +415,10 @@ const handleMouseDown = (e) => {
 
 const handleMouseMove = (e) => {
   if (!mouseDown.value || !spacePressed.value) return
-  
+
   const deltaX = e.clientX - lastMousePos.value.x
   const deltaY = e.clientY - lastMousePos.value.y
-  
+
   panCamera(deltaX, deltaY)
   lastMousePos.value = { x: e.clientX, y: e.clientY }
 }

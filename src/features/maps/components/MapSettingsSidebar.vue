@@ -1,10 +1,8 @@
 <template>
-  <div
-    class="fixed left-16 top-0 bottom-0 z-40 w-96 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border shadow-2xl">
+  <div class="fixed left-16 top-0 bottom-0 z-40 w-96 bg-card border-r border-border shadow-2xl">
     <div class="h-full flex flex-col">
       <!-- Header -->
-      <div
-        class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+      <div class="h-14 shrink-0 border-b border-border flex items-center justify-between px-4 bg-card">
         <div class="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" class="text-lumina-detail">
@@ -121,7 +119,7 @@
                 <input v-model.number="localSettings.grid_opacity" type="range" min="0" max="1" step="0.05"
                   class="flex-1" />
                 <span class="text-xs font-mono w-12 text-lumina-text">{{ Math.round(localSettings.grid_opacity * 100)
-                  }}%</span>
+                }}%</span>
               </div>
             </div>
           </div>

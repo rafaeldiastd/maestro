@@ -1,10 +1,8 @@
 <template>
-  <div
-    class="fixed left-16 top-0 bottom-0 z-40 w-96 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border shadow-2xl">
+  <div class="fixed left-16 top-0 bottom-0 z-40 w-96 bg-card border-r border-border shadow-2xl">
     <div class="h-full flex flex-col">
       <!-- Header -->
-      <div
-        class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+      <div class="h-14 shrink-0 border-b border-border flex items-center justify-between px-4 bg-card">
         <div class="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" class="text-lumina-detail">

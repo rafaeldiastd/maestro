@@ -78,10 +78,9 @@ const onDrop = (event, dropIndex) => {
 </script>
 
 <template>
-    <div class="h-full flex flex-col bg-lumina-card text-lumina-text border-r border-lumina-border shadow-2xl">
+    <div class="h-full flex flex-col bg-card text-foreground border-r border-border shadow-2xl">
         <!-- Header -->
-        <div
-            class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+        <div class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-card">
             <div class="flex items-center gap-2">
                 <Sword class="h-4 w-4 text-lumina-detail" />
                 <span class="text-sm font-bold text-lumina-text font-serif tracking-wide">Iniciativa</span>
@@ -131,13 +130,13 @@ const onDrop = (event, dropIndex) => {
                     <RefreshCw class="h-3 w-3 mr-1" /> Ordenar
                 </Button>
                 <Button size="sm" variant="outline"
-                    class="h-7 w-7 p-0 border-lumina-border hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30"
+                    class="h-7 w-7 p-0 border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
                     @click="$emit('clear')" title="Limpar">
                     <Trash2 class="h-3 w-3" />
                 </Button>
             </div>
 
-            <div class="flex items-center justify-between text-xs font-mono text-lumina-text-muted pt-1">
+            <div class="flex items-center justify-between text-xs font-mono text-muted-foreground pt-1">
                 <span>Round: {{ round }}</span>
             </div>
         </div>

@@ -12,7 +12,8 @@ const props = defineProps({
   viewMode: { type: String, default: 'grid' },
   blurMode: { type: Boolean, default: false },
   isUploading: { type: Boolean, default: false },
-  getAssetUrl: { type: Function, required: true }
+  getAssetUrl: { type: Function, required: true },
+  isPicker: { type: Boolean, default: false }
 })
 
 const emit = defineEmits([
@@ -26,7 +27,8 @@ const emit = defineEmits([
   'create-folder',
   'open-folder',
   'delete-folder',
-  'move-asset'
+  'move-asset',
+  'pick'
 ])
 
 const fileInput = ref(null)
@@ -96,6 +98,11 @@ const triggerUpload = () => {
     <!-- Actions Bar: Search & Breadcrumbs -->
     <div class="p-4 border-b border-lumina-border shrink-0 space-y-3">
 
+       <!-- Picker Banner -->
+       <div v-if="isPicker" class="bg-lumina-detail text-lumina-bg font-bold px-3 py-1.5 rounded text-xs flex items-center justify-between mb-2">
+          <span>Selecione uma imagem para o mapa...</span>
+       </div>
+
       <!-- Search -->
       <div class="relative">
         <Search class="absolute left-2 top-2 h-4 w-4 text-lumina-text-muted" />
@@ -149,12 +156,12 @@ const triggerUpload = () => {
 
     <!-- Grid -->
     <div class="flex-1 overflow-hidden">
-      <CampaignGrid :assets="filteredAssets" :folders="filteredFolders" :view-mode="viewMode" :blur-mode="blurMode"
-        :get-asset-url="getAssetUrl" @file-drop="handleDrop" @open-folder="$emit('open-folder', $event)"
+      <CampaignGrid :assets="filteredAssets" :folders="folders" :view-mode="viewMode" :blur-mode="blurMode"
+        :get-asset-url="getAssetUrl" :is-picker="isPicker" @file-drop="handleDrop" @open-folder="$emit('open-folder', $event)"
         @delete-folder="$emit('delete-folder', $event)"
         @move-asset="$emit('move-asset', $event.asset, $event.targetFolderId)"
         @open-lightbox="$emit('open-lightbox', $event)" @rename="$emit('rename', $event)"
-        @delete="$emit('delete', $event)" />
+        @delete="$emit('delete', $event)" @pick="$emit('pick', $event)" />
     </div>
   </div>
 </template>

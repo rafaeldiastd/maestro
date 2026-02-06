@@ -196,7 +196,7 @@ const rollAbility = (ability) => {
 
                                 <!-- Damage Badge -->
                                 <span v-if="ability.damage_formula"
-                                    class="font-mono text-[10px] text-red-200 bg-red-900/40 border border-red-500/30 px-1.5 py-0.5 rounded whitespace-nowrap"
+                                    class="font-mono text-[10px] text-destructive-foreground bg-destructive border border-destructive/30 px-1.5 py-0.5 rounded whitespace-nowrap"
                                     title="Rolagem de Dano">
                                     Dano: {{ ability.damage_formula }}
                                 </span>

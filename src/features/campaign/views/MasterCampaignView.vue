@@ -2,7 +2,7 @@
   <div class="flex h-screen w-screen bg-lumina-bg text-lumina-text overflow-hidden">
 
     <!-- Icon Sidebar -->
-    <IconSidebar :items="sidebarItems" :activeItem="activeModal" @select="handleSidebarSelect">
+    <IconSidebar :items="sidebarItems" :activeItem="activeSidebar" @select="handleSidebarSelect">
 
       <template #bottom>
         <Button variant="ghost" size="icon"
@@ -36,20 +36,17 @@
     </main>
 
     <!-- Maps Sidebar (Fixed Left) -->
-    <div
-      class="fixed left-16 top-0 bottom-0 z-30 w-80 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border transition-transform duration-300"
-      :class="modals.maps.open ? 'translate-x-0' : '-translate-x-full'">
+    <div class="fixed left-16 top-0 bottom-0 z-30 w-80 bg-card border-r border-border transition-transform duration-300"
+      :class="activeSidebar === 'maps' ? 'translate-x-0' : '-translate-x-full'">
       <div class="h-full flex flex-col">
         <!-- Header -->
-        <div
-          class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+        <div class="h-14 shrink-0 border-b border-border flex items-center justify-between px-4 bg-card">
           <div class="flex items-center gap-2">
-            <Map class="h-4 w-4 text-lumina-detail" />
-            <span class="text-sm font-bold text-lumina-text font-serif tracking-wide">Mapas</span>
+            <Map class="h-4 w-4 text-primary" />
+            <span class="text-sm font-bold text-foreground font-serif tracking-wide">Mapas</span>
           </div>
-          <Button variant="ghost" size="icon"
-            class="h-8 w-8 text-lumina-text-muted hover:text-lumina-text hover:bg-lumina-bg"
-            @click="modals.maps.open = false">
+          <Button variant="ghost" size="icon" class="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+            @click="activeSidebar = null">
             <X class="h-4 w-4" />
           </Button>
         </div>
@@ -139,19 +136,18 @@
 
     <!-- Asset Sidebar (Fixed Left) -->
     <div
-      class="fixed left-16 top-0 bottom-0 z-40 w-96 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border transition-transform duration-300"
-      :class="modals.assets.open ? 'translate-x-0' : '-translate-x-full'">
+      class="fixed left-16 top-0 bottom-0 z-40 w-96 bg-lumina-card border-r border-lumina-border transition-transform duration-300"
+      :class="activeSidebar === 'assets' ? 'translate-x-0' : '-translate-x-full'">
       <div class="h-full flex flex-col">
         <!-- Header Standard -->
-        <div
-          class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+        <div class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80">
           <div class="flex items-center gap-2">
             <ImageIcon class="h-4 w-4 text-lumina-detail" />
             <span class="text-sm font-bold text-lumina-text font-serif tracking-wide">Gerenciador de Arquivos</span>
           </div>
           <Button variant="ghost" size="icon"
             class="h-8 w-8 text-lumina-text-muted hover:text-lumina-text hover:bg-lumina-bg"
-            @click="closeModal('assets')">
+            @click="activeSidebar = null">
             <X class="h-4 w-4" />
           </Button>
         </div>
@@ -159,37 +155,44 @@
         <div class="flex-1 overflow-hidden">
           <AssetManagerModal :assets="assets" :folders="folders" :current-folder-id="currentFolderId"
             :view-mode="viewMode" :blur-mode="blurMode" :is-uploading="isUploading" :get-asset-url="getAssetUrl"
+            :is-picker="isPickingImage"
             @create-folder="createFolder" @open-folder="openFolder" @delete-folder="deleteFolder"
             @move-asset="moveAssetToFolder" @file-upload="onFileChange" @file-drop="onFileDrop"
             @open-lightbox="openLightbox" @rename="renameAsset" @delete="deleteAsset"
-            @update:viewMode="viewMode = $event" @toggle-blur="toggleBlur" />
+            @update:viewMode="viewMode = $event" @toggle-blur="toggleBlur" @pick="handleAssetPick" />
         </div>
       </div>
     </div>
 
     <!-- Notes Sidebar (Fixed Left) -->
-    <NotesSidebar :is-open="modals.notes.open && !activeNote" :folders="noteFolders" :notes="notes"
-      @close="modals.notes.open = false" @create-note="createNote" @create-folder="createNoteFolder"
-      @delete-note="deleteNote" @delete-folder="deleteNoteFolder" @open-note="openNote" @move-item="moveNoteItem" />
+    <div
+      class="fixed left-16 top-0 bottom-0 z-40 w-80 bg-lumina-card border-r border-lumina-border transition-transform duration-300"
+      :class="activeSidebar === 'notes' ? 'translate-x-0' : '-translate-x-full'">
+      <div class="h-full flex flex-col">
+        <NotesSidebar :is-open="true" :folders="noteFolders" :notes="notes" @close="activeSidebar = null"
+          @create-note="createNote" @create-folder="createNoteFolder" @delete-note="deleteNote"
+          @delete-folder="deleteNoteFolder" @open-note="openNote" @move-item="moveNoteItem" />
+      </div>
+    </div>
 
     <!-- Bestiary Sidebar (Fixed Left) -->
     <div
-      class="fixed left-16 top-0 bottom-0 z-40 w-80 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border transition-transform duration-300"
-      :class="modals.bestiary.open ? 'translate-x-0' : '-translate-x-full'">
+      class="fixed left-16 top-0 bottom-0 z-40 w-80 bg-lumina-card border-r border-lumina-border transition-transform duration-300"
+      :class="activeSidebar === 'bestiary' ? 'translate-x-0' : '-translate-x-full'">
       <div class="h-full flex flex-col relative bg-lumina-card">
         <BestiarySidebar :npcs="npcs" @create="openNpcModal(null)" @edit="openNpcModal" @delete="deleteNpc"
-          @select="openNpcSheet" @close="closeModal('bestiary')" />
+          @select="openNpcSheet" @close="activeSidebar = null" />
       </div>
     </div>
 
     <!-- Initiative Sidebar (Fixed Left) -->
     <div
-      class="fixed left-16 top-0 bottom-0 z-40 w-80 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border transition-transform duration-300"
-      :class="modals.initiative?.open ? 'translate-x-0' : '-translate-x-full'">
+      class="fixed left-16 top-0 bottom-0 z-40 w-80 bg-lumina-card border-r border-lumina-border transition-transform duration-300"
+      :class="activeSidebar === 'initiative' ? 'translate-x-0' : '-translate-x-full'">
       <InitiativeSidebar :participants="initiativeParticipants" :round="initiativeRound"
         :active-participant-id="initiativeActiveIndex" v-model:is-capturing="isCapturingInitiative"
         @update:participants="saveInitiative" @next-turn="handleInitiativeNext" @clear="handleInitiativeClear"
-        @close="closeModal('initiative')" />
+        @close="activeSidebar = null" />
     </div>
 
     <!-- NPC Modal -->
@@ -208,7 +211,7 @@
     <!-- Note Editor Panel (Fixed Lateral) -->
     <div
       class="fixed left-16 top-0 bottom-0 z-40 w-[600px] bg-lumina-card border-r border-lumina-border shadow-2xl transition-transform duration-300"
-      :class="(activeNote && modals.notes.open) ? 'translate-x-0' : '-translate-x-full'">
+      :class="(activeNote && activeSidebar === 'notes') ? 'translate-x-0' : '-translate-x-full'">
       <NoteEditor v-if="activeNote" ref="noteEditorRef" :note="activeNote" @update="updateNote"
         @pick-image="handlePickImage" @close="activeNote = null" />
     </div>
@@ -232,10 +235,11 @@
 import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
+import { storeToRefs } from 'pinia'
 import { useStorage } from '@/composables/useStorage'
 import { useCampaignInvites } from '@/composables/useCampaignInvites'
-import { useChat } from '@/features/chat/composables/useChat'
-import { useInitiative } from '@/features/campaign/composables/useInitiative'
+import { useChatStore } from '@/stores/chat'
+import { useInitiativeStore } from '@/stores/initiative'
 import { useDiceRoll } from '@/composables/useDiceRoll'
 import imageCompression from 'browser-image-compression'
 import { Image as ImageIcon, Settings, Map, ArrowLeft, X, FileText, MessageSquare, Skull, Sword } from 'lucide-vue-next'
@@ -278,7 +282,8 @@ const isChatOpen = ref(true)
 const unreadMessages = ref(0) // Added for chat badge
 
 const { storage, providerType, setConfig } = useStorage()
-const { sendMessage } = useChat()
+const chatStore = useChatStore()
+const { sendMessage } = chatStore
 const { roll } = useDiceRoll()
 const channel = ref(null)
 
@@ -304,20 +309,24 @@ const showNpcModal = ref(false)
 const activeNpc = ref(null)
 const activeNpcSheet = ref(null)
 
-// --- Initiative State (Singleton) ---
+// --- Initiative State (Pinia) ---
+const initiativeStore = useInitiativeStore()
 const {
   participants: initiativeParticipants,
   currentRound: initiativeRound,
   activeIndex: initiativeActiveIndex,
-  isCapturing: isCapturingInitiative,
+  isCapturing: isCapturingInitiative
+} = storeToRefs(initiativeStore)
+
+const {
   addParticipant,
   updateParticipantsList,
   nextTurn,
   clearInitiative,
   fetchInitiative
-} = useInitiative()
+} = initiativeStore
 
-const { messages } = useChat() // Need messages to watch
+const { messages } = storeToRefs(chatStore) // Need messages to watch
 
 watch(messages, (newMessages) => {
   // If not capturing and not explicit, ignore?
@@ -387,7 +396,9 @@ const handleManualInitiativeAdd = ({ name, total }) => {
       total,
       type: 'player'
     }, sessionId)
-    modals.initiative.open = true
+    // Removed broken modal usage. Sidebar handles its own visibility via watchers or activeSidebar if simplified.
+    // Ideally, just adding it automatically opens the sidebar if we want feedback.
+    activeSidebar.value = 'initiative'
   }
 }
 
@@ -409,23 +420,11 @@ const canvasRef = ref(null)
 const createSidebarRef = ref(null)
 
 // Sidebar Management
+const activeSidebar = ref(null)
+
 const modals = reactive({
-  assets: { open: false },
-  notes: { open: false },
-  maps: { open: false },
-  bestiary: { open: false },
-  initiative: { open: false },
   createMap: { open: false },
   mapSettings: { open: false }
-})
-
-const activeModal = computed(() => {
-  if (modals.assets.open) return 'assets'
-  if (modals.notes.open) return 'notes'
-  if (modals.maps.open) return 'maps'
-  if (modals.bestiary.open) return 'bestiary'
-  if (modals.initiative?.open) return 'initiative'
-  return null
 })
 
 // Sidebar Items
@@ -434,31 +433,36 @@ const sidebarItems = computed(() => [
     id: 'maps',
     icon: Map,
     label: 'Mapas',
-    badge: 0
+    badge: 0,
+    active: activeSidebar.value === 'maps'
   },
   {
     id: 'assets',
     icon: ImageIcon,
     label: 'Arquivos',
-    badge: assets.value.length
+    badge: assets.value.length,
+    active: activeSidebar.value === 'assets'
   },
   {
     id: 'bestiary',
     icon: Skull,
     label: 'Bestiário',
-    badge: npcs.value.length
+    badge: npcs.value.length,
+    active: activeSidebar.value === 'bestiary'
   },
   {
     id: 'initiative',
     icon: Sword,
     label: 'Iniciativa',
-    badge: initiativeParticipants.value.length
+    badge: initiativeParticipants.value.length,
+    active: activeSidebar.value === 'initiative'
   },
   {
     id: 'notes',
     icon: FileText,
     label: 'Notas',
-    badge: notes.value.length
+    badge: notes.value.length,
+    active: activeSidebar.value === 'notes'
   },
   {
     id: 'settings',
@@ -471,7 +475,7 @@ const sidebarItems = computed(() => [
     icon: MessageSquare,
     label: 'Chat',
     badge: unreadMessages.value > 0 ? unreadMessages.value : 0,
-    active: isChatOpen.value // Highlight when open
+    active: isChatOpen.value
   }
 ])
 
@@ -489,24 +493,23 @@ const handleSidebarSelect = (itemId) => {
     return
   }
 
-  // Close others if opening one
-  if (modals[itemId]) {
-    // Close all others first
-    Object.keys(modals).forEach(k => {
-      if (k !== itemId && modals[k]) modals[k].open = false
-    })
-    modals[itemId].open = !modals[itemId].open
-
-    // Cascade Close: Reset detail views when closing (toggling off) or switching
-    // If we just toggled it OFF (!open), close its details.
-    // If we switched to a DIFFERENT sidebar (itemId !== 'bestiary'), close bestiary details.
-    if (!modals[itemId].open || itemId !== 'notes') {
-      activeNote.value = null
-    }
-    if (!modals[itemId].open || itemId !== 'bestiary') {
-      activeNpcSheet.value = null
-    }
+  // Toggle Sidebars
+  // Toggle Sidebars
+  if (activeSidebar.value === itemId) {
+    activeSidebar.value = null
+  } else {
+    activeSidebar.value = itemId
   }
+  
+  // Close picker mode if switching away from assets
+  if (itemId !== 'assets') {
+    isPickingImage.value = false
+    pickerCallback.value = null
+  }
+
+  // Close details when switching away
+  if (activeSidebar.value !== 'notes') activeNote.value = null
+  if (activeSidebar.value !== 'bestiary') activeNpcSheet.value = null
 }
 
 // ... (Existing Close/Etc) ...
@@ -557,7 +560,7 @@ const selectMap = (map) => {
 
 const handleSelectMap = (map) => {
   selectMap(map)
-  modals.maps.open = false
+  activeSidebar.value = null
 }
 
 const handlePickImageForCreate = () => {
@@ -566,9 +569,20 @@ const handlePickImageForCreate = () => {
     if (createSidebarRef.value && url) {
       createSidebarRef.value.setBackgroundUrl(url)
     }
+    // Don't clear callback yet, let the closer handle it or simple reset
+    activeSidebar.value = null // Close asset sidebar after picking
     pickerCallback.value = null
+    isPickingImage.value = false
   }
-  modals.assets.open = true
+  
+  activeSidebar.value = 'assets' // Open Sidebar
+  // Removed broken modals.assets.open = true
+}
+
+const handleAssetPick = (asset) => {
+    if (pickerCallback.value && asset) {
+        pickerCallback.value(getAssetUrl(asset))
+    }
 }
 
 const handleSaveNewMap = async (mapData) => {
@@ -588,7 +602,7 @@ const handleSaveNewMap = async (mapData) => {
     }
     selectMap(data)
     modals.createMap.open = false
-    modals.maps.open = false
+    activeSidebar.value = null
   }
 }
 
@@ -768,8 +782,10 @@ const handleOpenNpcNote = async (npc, initialTag) => {
     const existingNote = notes.value.find(n => n.id === npc.note_id)
     if (existingNote) {
       openNote(existingNote)
+      openNote(existingNote)
       showNpcModal.value = false // Focus Mode: Close NPC Modal
-      modals.bestiary.open = false // Close Bestiary Sidebar
+      activeSidebar.value = 'notes' // Switch sidebar to notes
+      return
       return
     }
   }
@@ -802,7 +818,8 @@ const handleOpenNpcNote = async (npc, initialTag) => {
     // 4. Open Note & Focus
     openNote(newNote)
     showNpcModal.value = false
-    modals.bestiary.open = false // Close Bestiary Sidebar for full focus
+    showNpcModal.value = false
+    activeSidebar.value = 'notes' // Switch to notes sidebar checking undefined modals logic removed
   }
 }
 

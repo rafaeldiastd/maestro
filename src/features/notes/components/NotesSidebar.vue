@@ -94,12 +94,9 @@ const handleDrop = (event, targetFolder) => {
 </script>
 
 <template>
-  <div
-    class="fixed left-16 top-0 bottom-0 z-30 w-80 bg-lumina-card/95 backdrop-blur-xl border-r border-lumina-border shadow-2xl transition-transform duration-300 flex flex-col"
-    :class="isOpen ? 'translate-x-0' : '-translate-x-full'">
+  <div class="h-full w-full flex flex-col bg-card">
     <!-- Header -->
-    <div
-      class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+    <div class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-card">
       <div class="flex items-center gap-2">
         <FileText class="h-4 w-4 text-lumina-detail" />
         <span class="text-sm font-bold text-lumina-text font-serif tracking-wide">Notas</span>

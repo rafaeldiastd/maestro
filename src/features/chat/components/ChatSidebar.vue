@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Send, X, MessageSquare, ChevronRight, ChevronLeft, Calculator, RotateCcw, Check, Copy } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useChat } from '../composables/useChat'
+import { useChatStore } from '@/stores/chat'
 import { useCampaignInvites } from '@/composables/useCampaignInvites'
 import ChatMessage from './ChatMessage.vue'
 import ChatRecipientSelector from './ChatRecipientSelector.vue'
@@ -77,17 +78,21 @@ const selectionTotal = computed(() => {
 
 
 // Composables
+const chatStore = useChatStore()
 const {
   messages,
   loading,
-  hasMore,
+  hasMore
+} = storeToRefs(chatStore)
+
+const {
   loadMessages,
   loadMoreMessages,
   subscribeToChat,
   unsubscribeChat,
   sendMessage,
   deleteMessage
-} = useChat()
+} = chatStore
 const { roll } = useDiceRoll()
 const { getMembers } = useCampaignInvites()
 
@@ -350,11 +355,10 @@ const handleQuickRoll = async (formula) => {
     :class="isOpen ? 'w-96 translate-x-0' : 'w-0 translate-x-0'">
     <!-- Main Sidebar Content -->
     <div v-show="isOpen"
-      class="flex-1 flex flex-col bg-lumina-card backdrop-blur-xl border-l border-lumina-border shadow-2xl pointer-events-auto h-full">
+      class="flex-1 flex flex-col bg-card border-l border-border shadow-2xl pointer-events-auto h-full">
 
       <!-- Header -->
-      <div
-        class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-lumina-bg/80 backdrop-blur-md">
+      <div class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-card">
         <div class="flex items-center gap-2">
           <MessageSquare class="h-4 w-4 text-lumina-detail" />
           <span class="text-sm font-bold text-lumina-text font-serif tracking-wide">Chat do Grupo</span>
@@ -366,7 +370,7 @@ const handleQuickRoll = async (formula) => {
       </div>
 
       <!-- Messages Area -->
-      <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 custom-scrollbar" @scroll="handleScroll">
+      <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 scrollbar-thin" @scroll="handleScroll">
         <div v-if="loading && messages.length > 0" class="flex justify-center py-2">
           <div class="h-4 w-4 animate-spin rounded-full border-2 border-lumina-detail border-t-transparent"></div>
         </div>
@@ -390,7 +394,7 @@ const handleQuickRoll = async (formula) => {
       </div>
 
       <!-- Footer Area: Input & Recipient -->
-      <div class="shrink-0 p-4 border-t border-lumina-border bg-lumina-bg/80 backdrop-blur-md space-y-3">
+      <div class="shrink-0 p-4 border-t border-lumina-border bg-card space-y-3">
 
         <!-- Toolbar: Recipient & Dice -->
         <div class="flex items-center gap-2">
@@ -426,9 +430,8 @@ const handleQuickRoll = async (formula) => {
           </div>
 
           <div class="flex items-center gap-3">
-            <span class="text-sm font-bold text-lumina-detail">Total: {{ selectionTotal }}</span>
-            <div class="h-4 w-px bg-lumina-border"></div>
-            <Button size="icon" class="h-6 w-6 hover:bg-lumina-bg text-lumina-text-muted hover:text-red-400"
+            <div class="h-4 w-px bg-border"></div>
+            <Button size="icon" class="h-6 w-6 hover:bg-muted text-muted-foreground hover:text-destructive"
               @click="selectedMessageIds.clear()" title="Limpar Seleção">
               <RotateCcw class="h-3 w-3" />
             </Button>
@@ -451,20 +454,5 @@ const handleQuickRoll = async (formula) => {
 </template>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+/* Scoped styles removed */
 </style>

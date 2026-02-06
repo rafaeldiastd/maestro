@@ -115,7 +115,7 @@ const parsedContent = computed(() => {
           </button>
 
           <button v-if="canDelete" @click.stop="$emit('delete', message.id)"
-            class="p-1.5 rounded hover:bg-red-500/10 text-lumina-text-muted hover:text-red-400 transition-colors"
+            class="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
             title="Excluir mensagem">
             <Trash2 class="h-3.5 w-3.5" />
           </button>
