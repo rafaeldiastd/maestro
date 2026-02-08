@@ -15,7 +15,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'dblclick'])
 
 const handleSelect = (itemId) => {
   emit('select', itemId)
@@ -23,7 +23,7 @@ const handleSelect = (itemId) => {
 </script>
 
 <template>
-  <aside class="fixed left-0 top-0 h-screen w-16 bg-lumina-card border-r border-lumina-border flex flex-col items-center py-4 gap-2 z-50">
+  <aside class="fixed left-0 top-0 h-screen w-16 bg-lumina-card border-r border-lumina-border flex flex-col items-center py-4 gap-2 z-50 select-none">
     
     <!-- Logo/Home -->
     <div class="mb-4 p-2 rounded-lg bg-lumina-detail text-lumina-bg">
@@ -50,7 +50,8 @@ const handleSelect = (itemId) => {
                   ? 'bg-lumina-detail/10 text-lumina-detail border border-lumina-detail/20' 
                   : 'text-lumina-text-muted hover:text-lumina-text hover:bg-lumina-bg'
               ]"
-              @click="handleSelect(item.id)">
+              @click="handleSelect(item.id)"
+              @dblclick="$emit('dblclick', item.id)">
               <component :is="item.icon" class="h-5 w-5" />
               
               <!-- Badge -->

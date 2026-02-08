@@ -2,7 +2,7 @@
   <div class="flex h-screen w-screen bg-lumina-bg text-lumina-text overflow-hidden">
 
     <!-- Icon Sidebar -->
-    <IconSidebar :items="sidebarItems" :activeItem="activeSidebar" @select="handleSidebarSelect">
+    <IconSidebar :items="sidebarItems" :activeItem="activeSidebar" @select="handleSidebarSelect" @dblclick="handleSidebarDblClick">
 
       <template #bottom>
         <Button variant="ghost" size="icon"
@@ -228,6 +228,49 @@
       :is-open="isChatOpen" :active-context="activeNpcSheet" :is-capturing="isCapturingInitiative"
       @toggle="isChatOpen = !isChatOpen" @add-initiative="handleManualInitiativeAdd" />
 
+    <!-- Draggable Floating Sidebar -->
+    <DraggableModal v-if="activeFloatingSidebar"
+      :title="sidebarItems.find(i => i.id === activeFloatingSidebar)?.label || 'Janela'"
+      :icon="sidebarItems.find(i => i.id === activeFloatingSidebar)?.icon" 
+      :modelValue="true" 
+      @update:modelValue="activeFloatingSidebar = null"
+      :defaultWidth="400" :defaultHeight="600"
+      class="z-50">
+      
+      <!-- Shared Sidebar Content Wrapper -->
+      <div v-if="activeFloatingSidebar === 'assets'" class="h-full">
+         <AssetManagerModal :assets="assets" :folders="folders" :current-folder-id="currentFolderId"
+            :view-mode="viewMode" :blur-mode="blurMode" :is-uploading="isUploading" :get-asset-url="getAssetUrl"
+            :is-picker="isPickingImage"
+            @create-folder="createFolder" @open-folder="openFolder" @delete-folder="deleteFolder"
+            @move-asset="moveAssetToFolder" @file-upload="onFileChange" @file-drop="onFileDrop"
+            @open-lightbox="openLightbox" @rename="renameAsset" @delete="deleteAsset"
+            @update:viewMode="viewMode = $event" @toggle-blur="toggleBlur" @pick="handleAssetPick" />
+      </div>
+
+      <div v-else-if="activeFloatingSidebar === 'bestiary'" class="h-full relative">
+         <BestiarySidebar :npcs="npcs" @create="openNpcModal(null)" @edit="openNpcModal" @delete="deleteNpc"
+          @select="openNpcSheet" @close="activeFloatingSidebar = null" />
+      </div>
+
+      <div v-else-if="activeFloatingSidebar === 'initiative'" class="h-full">
+         <InitiativeSidebar :participants="initiativeParticipants" :round="initiativeRound"
+        :active-participant-id="initiativeActiveIndex" v-model:is-capturing="isCapturingInitiative"
+        @update:participants="saveInitiative" @next-turn="handleInitiativeNext" @clear="handleInitiativeClear"
+        @close="activeFloatingSidebar = null" />
+      </div>
+
+      <div v-else-if="activeFloatingSidebar === 'notes'" class="h-full">
+         <NotesSidebar :is-open="true" :folders="noteFolders" :notes="notes" @close="activeFloatingSidebar = null"
+          @create-note="createNote" @create-folder="createNoteFolder" @delete-note="deleteNote"
+          @delete-folder="deleteNoteFolder" @open-note="openNote" @move-item="moveNoteItem" />
+      </div>
+
+      <div v-else class="p-4 text-center text-lumina-text-muted">
+        Conteúdo não disponível em modo flutuante.
+      </div>
+    </DraggableModal>
+
   </div>
 </template>
 
@@ -421,6 +464,7 @@ const createSidebarRef = ref(null)
 
 // Sidebar Management
 const activeSidebar = ref(null)
+const activeFloatingSidebar = ref(null) // [NEW] Detached sidebar state
 
 const modals = reactive({
   createMap: { open: false },
@@ -481,6 +525,13 @@ const sidebarItems = computed(() => [
 
 // --- Management ---
 const handleSidebarSelect = (itemId) => {
+  // If this item is already floating, bring it to focus (or just do nothing for now)
+  if (activeFloatingSidebar.value === itemId) {
+    // maybe focus?
+    return
+  }
+
+  // Navigate to settings page
   // Navigate to settings page
   if (itemId === 'settings') {
     router.push(`/campaign/${sessionId}/settings`)
@@ -494,11 +545,12 @@ const handleSidebarSelect = (itemId) => {
   }
 
   // Toggle Sidebars
-  // Toggle Sidebars
   if (activeSidebar.value === itemId) {
     activeSidebar.value = null
   } else {
     activeSidebar.value = itemId
+    // If opening fixed sidebar, close floating one of same type (optional, but good for consistency)
+    if (activeFloatingSidebar.value === itemId) activeFloatingSidebar.value = null
   }
   
   // Close picker mode if switching away from assets
@@ -510,6 +562,13 @@ const handleSidebarSelect = (itemId) => {
   // Close details when switching away
   if (activeSidebar.value !== 'notes') activeNote.value = null
   if (activeSidebar.value !== 'bestiary') activeNpcSheet.value = null
+}
+
+const handleSidebarDblClick = (itemId) => {
+  if (['assets', 'bestiary', 'initiative', 'notes'].includes(itemId)) {
+    activeSidebar.value = null // Close fixed
+    activeFloatingSidebar.value = itemId // Open floating
+  }
 }
 
 // ... (Existing Close/Etc) ...
@@ -782,10 +841,7 @@ const handleOpenNpcNote = async (npc, initialTag) => {
     const existingNote = notes.value.find(n => n.id === npc.note_id)
     if (existingNote) {
       openNote(existingNote)
-      openNote(existingNote)
-      showNpcModal.value = false // Focus Mode: Close NPC Modal
       activeSidebar.value = 'notes' // Switch sidebar to notes
-      return
       return
     }
   }
@@ -816,8 +872,8 @@ const handleOpenNpcNote = async (npc, initialTag) => {
     }
 
     // 4. Open Note & Focus
+    // 4. Open Note & Focus
     openNote(newNote)
-    showNpcModal.value = false
     showNpcModal.value = false
     activeSidebar.value = 'notes' // Switch to notes sidebar checking undefined modals logic removed
   }
@@ -1091,7 +1147,7 @@ const deleteNoteFolder = async (folder) => {
 
 const openNote = (note) => {
   activeNote.value = note
-  modals.notes.open = true
+  activeSidebar.value = 'notes'
 }
 
 const moveNoteItem = async (event) => {
