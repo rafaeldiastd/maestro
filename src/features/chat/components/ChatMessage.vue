@@ -25,6 +25,10 @@ const props = defineProps({
     type: String,
     default: 'Desconhecido'
   },
+  avatarUrl: {
+    type: String,
+    default: null
+  },
   isCapturing: {
     type: Boolean,
     default: false
@@ -61,6 +65,23 @@ const parsedContent = computed(() => {
     return null
   }
 })
+
+const displayName = computed(() => {
+  const content = parsedContent.value
+  let finalName = content?.name || props.senderName
+
+  // Fix: If DM (Mestre) is rolling for an NPC (e.g. "Alucard - STR"), use the NPC name
+  if (finalName === 'Mestre' && content?.label && content.label.includes(' - ')) {
+    return content.label.split(' - ')[0]
+  }
+
+  return finalName
+})
+
+// [NEW] Allow content to override avatar
+const displayAvatar = computed(() => {
+  return parsedContent.value?.avatar || props.avatarUrl
+})
 </script>
 
 <template>
@@ -79,26 +100,25 @@ const parsedContent = computed(() => {
     <div class="flex items-center justify-between mb-4 pb-3 border-b border-lumina-border/50">
       <div class="flex items-center gap-3">
         <!-- Avatar Placeholder -->
-        <div class="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border"
+        <!-- Avatar -->
+        <div class="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border overflow-hidden"
           :class="isMe ? 'bg-lumina-detail/10 border-lumina-detail/30 text-lumina-detail' : 'bg-lumina-bg border-lumina-border text-lumina-text-muted'">
-          <span class="text-xs font-bold font-serif">{{ senderName.charAt(0).toUpperCase() }}</span>
+
+          <img v-if="displayAvatar" :src="displayAvatar" alt="Avatar" class="h-full w-full object-cover" />
+          <span v-else class="text-xs font-bold font-serif">{{ displayName.charAt(0).toUpperCase() }}</span>
         </div>
 
-        <div class="flex flex-col">
+        <div class="flex flex-col gap-2">
           <span class="text-xs font-bold font-serif tracking-wide"
             :class="isMe ? 'text-lumina-detail' : 'text-lumina-text'">
-            {{ senderName }}
+            {{ displayName }}
           </span>
-          <span v-if="parsedContent?.type === 'roll'"
-            class="text-[10px] text-lumina-text-muted font-mono uppercase tracking-wider">
-            Rolou Dados
-          </span>
+          <span v-if="isPrivate"
+            class="text-[0.5rem] uppercase text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">Sussurro</span>
         </div>
       </div>
 
       <div class="flex items-center gap-4">
-        <span v-if="isPrivate"
-          class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 shadow-[0_0_10px_-4px_rgba(168,85,247,0.3)]">Sussurro</span>
 
         <span class="text-xs text-lumina-text-muted font-sans opacity-60">
           {{ new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
@@ -127,7 +147,7 @@ const parsedContent = computed(() => {
     <div class="text-lumina-text text-sm leading-6 px-1 font-sans">
       <!-- Type: Roll -->
       <DiceRollResult v-if="parsedContent && parsedContent.type === 'roll'" :result="parsedContent"
-        @roll-damage="$emit('roll-damage', $event)" />
+        @roll-damage="$emit('roll-damage', { formula: $event, name: displayName })" />
 
       <!-- Type: Card -->
       <ChatCard v-else-if="parsedContent && parsedContent.type === 'card'" :card="parsedContent" />

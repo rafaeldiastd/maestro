@@ -93,8 +93,8 @@ const handleClick = (asset) => {
          <div class="p-4 rounded-full bg-lumina-card mb-4 border border-lumina-border">
             <image-icon class="h-8 w-8 opacity-50" />
          </div>
-         <p class="text-sm font-medium">No assets</p>
-         <p class="text-xs text-lumina-text-muted mt-1">Drop files here</p>
+         <p class="text-sm font-medium">Nenhum arquivo</p>
+         <p class="text-xs text-lumina-text-muted mt-1">Arraste arquivos aqui</p>
       </div>
 
       <!-- Grid -->
@@ -106,12 +106,12 @@ const handleClick = (asset) => {
             @click="$emit('open-folder', folder.id)" @dragover.prevent @drop.stop="handleFolderDrop($event, folder)">
             <Folder class="h-10 w-10 text-lumina-detail fill-lumina-detail/10" />
             <span class="text-xs font-medium text-lumina-text truncate w-[80%] text-center px-1">{{ folder.name
-               }}</span>
+            }}</span>
 
             <!-- Folder Actions -->
             <button @click.stop="$emit('delete-folder', folder)"
                class="absolute top-2 right-2 p-1 rounded hover:bg-red-500/20 text-lumina-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-               title="Delete Folder">
+               title="Excluir Pasta">
                <Trash2 class="h-3 w-3" />
             </button>
          </div>
@@ -149,7 +149,7 @@ const handleClick = (asset) => {
                </p>
 
                <div class="flex items-center gap-1">
-                  <button @click.stop="$emit('rename', asset)" title="Rename"
+                  <button @click.stop="$emit('rename', asset)" title="Renomear"
                      class="p-1 rounded hover:bg-muted/20 text-muted-foreground hover:text-foreground transition-colors">
                      <Pencil class="h-3 w-3" />
                   </button>

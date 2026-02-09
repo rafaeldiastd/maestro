@@ -1,17 +1,10 @@
 <template>
   <div v-if="map" class="h-screen w-screen">
-    <MapCanvas 
-      :map="map" 
-      :all-maps="allMaps"
-      :is-gm="true" 
-      @close="handleClose" 
-      @update:map="handleUpdate"
-      @change-map="handleChangeMap"
-      @create-map="handleCreateMap"
-    />
+    <MapCanvas :map="map" :all-maps="allMaps" :is-gm="true" @close="handleClose" @update:map="handleUpdate"
+      @change-map="handleChangeMap" @create-map="handleCreateMap" />
   </div>
   <div v-else class="h-screen w-screen flex items-center justify-center bg-lumina-bg">
-    <p class="text-lumina-text-muted">Loading map...</p>
+    <p class="text-lumina-text-muted">Carregando mapa...</p>
   </div>
 </template>
 
@@ -40,7 +33,7 @@ const fetchAllMaps = async () => {
     .select('*')
     .eq('session_id', campaignId)
     .order('created_at', { ascending: false })
-  
+
   if (data) allMaps.value = data
 }
 
@@ -50,7 +43,7 @@ const fetchMap = async () => {
     .select('*')
     .eq('id', mapId.value)
     .single()
-  
+
   if (data) {
     map.value = data
   } else {
@@ -66,11 +59,11 @@ const handleClose = () => {
 const handleUpdate = async (updatedMap) => {
   // Optimistic update
   map.value = updatedMap
-  
+
   // Update in allMaps list
   const idx = allMaps.value.findIndex(m => m.id === updatedMap.id)
   if (idx !== -1) allMaps.value[idx] = updatedMap
-  
+
   // If activating, deactivate others
   if (updatedMap.is_active) {
     await supabase
@@ -78,13 +71,13 @@ const handleUpdate = async (updatedMap) => {
       .update({ is_active: false })
       .eq('session_id', campaignId)
       .neq('id', updatedMap.id)
-    
+
     // Update local state
     allMaps.value.forEach(m => {
       if (m.id !== updatedMap.id) m.is_active = false
     })
   }
-  
+
   // Save to database
   await supabase
     .from('campaign_maps')
@@ -135,7 +128,7 @@ const handleCreateMap = async () => {
     })
     .select()
     .single()
-  
+
   if (data) {
     allMaps.value.unshift(data)
     router.push(`/campaign/${campaignId}/map/${data.id}`)

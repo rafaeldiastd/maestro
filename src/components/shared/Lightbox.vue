@@ -25,7 +25,7 @@
           <button v-if="!isRevealed" @click="handleBroadcast"
             class="rounded-full bg-primary text-primary-foreground px-8 py-3 font-bold shadow-lg transition-transform hover:scale-105 hover:brightness-110 active:scale-95 flex items-center gap-2">
             <Eye class="h-5 w-5" />
-            Reveal to All
+            Revelar para Todos
           </button>
           <button v-else @click="$emit('hide')"
             class="rounded-full bg-destructive text-destructive-foreground px-8 py-3 font-bold shadow-lg backdrop-blur transition-transform hover:scale-105 hover:brightness-110 active:scale-95 flex items-center gap-2">

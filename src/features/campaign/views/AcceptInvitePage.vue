@@ -25,7 +25,7 @@ onMounted(async () => {
 
   // Load invitation details
   const token = route.params.token
-  
+
   if (!token) {
     error.value = 'Invalid invitation link'
     loadingInvite.value = false
@@ -38,7 +38,7 @@ onMounted(async () => {
 
   if (result.success) {
     invitation.value = result.data
-    
+
     // Check if already accepted/revoked
     if (invitation.value.status !== 'pending') {
       error.value = `This invitation has been ${invitation.value.status}`
@@ -95,48 +95,45 @@ const goToLogin = () => {
       <!-- Loading State -->
       <div v-if="loadingInvite" class="text-center py-12">
         <Loader2 class="h-12 w-12 text-lumina-detail animate-spin mx-auto mb-4" />
-        <p class="text-sm text-lumina-text-muted">Loading invitation...</p>
+        <p class="text-sm text-lumina-text-muted">Carregando convite...</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="bg-lumina-card border border-red-500/20 rounded-lg p-8 text-center">
-        <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 mb-4">
+        <div
+          class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 mb-4">
           <XCircle class="h-8 w-8 text-red-500" />
         </div>
-        <h2 class="text-xl font-bold font-serif text-lumina-text mb-2">Invalid Invitation</h2>
+        <h2 class="text-xl font-bold font-serif text-lumina-text mb-2">Convite Inválido</h2>
         <p class="text-sm text-lumina-text-muted mb-6">{{ error }}</p>
-        <Button
-          @click="router.push('/dashboard')"
-          variant="outline"
-          class="border-lumina-border text-lumina-text hover:bg-lumina-bg"
-        >
-          Go to Dashboard
+        <Button @click="router.push('/dashboard')" variant="outline"
+          class="border-lumina-border text-lumina-text hover:bg-lumina-bg">
+          Ir para o Dashboard
         </Button>
       </div>
 
       <!-- Success State -->
       <div v-else-if="accepted" class="bg-lumina-card border border-green-500/20 rounded-lg p-8 text-center">
-        <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 border border-green-500/20 mb-4">
+        <div
+          class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 border border-green-500/20 mb-4">
           <CheckCircle class="h-8 w-8 text-green-500" />
         </div>
-        <h2 class="text-xl font-bold font-serif text-lumina-text mb-2">Invitation Accepted!</h2>
+        <h2 class="text-xl font-bold font-serif text-lumina-text mb-2">Convite Aceito!</h2>
         <p class="text-sm text-lumina-text-muted mb-2">
-          You've joined <span class="text-lumina-text font-semibold">{{ invitation.campaign?.name }}</span>
+          Você entrou em <span class="text-lumina-text font-semibold">{{ invitation.campaign?.name }}</span>
         </p>
-        <p class="text-xs text-lumina-text-muted">Redirecting to campaign...</p>
+        <p class="text-xs text-lumina-text-muted">Redirecionando para a campanha...</p>
       </div>
 
       <!-- Invitation Details -->
       <div v-else-if="invitation" class="bg-lumina-card border border-lumina-border rounded-lg overflow-hidden">
         <!-- Cover Photo -->
-        <div 
-          v-if="invitation.campaign?.cover_photo"
-          class="h-48 bg-cover bg-center relative"
-          :style="{ backgroundImage: `url(${invitation.campaign.cover_photo})` }"
-        >
+        <div v-if="invitation.campaign?.cover_photo" class="h-48 bg-cover bg-center relative"
+          :style="{ backgroundImage: `url(${invitation.campaign.cover_photo})` }">
           <div class="absolute inset-0 bg-gradient-to-b from-transparent to-lumina-card"></div>
         </div>
-        <div v-else class="h-48 bg-gradient-to-br from-lumina-bg via-lumina-card to-lumina-bg flex items-center justify-center">
+        <div v-else
+          class="h-48 bg-gradient-to-br from-lumina-bg via-lumina-card to-lumina-bg flex items-center justify-center">
           <Users class="h-16 w-16 text-lumina-text-muted/20" />
         </div>
 
@@ -144,10 +141,10 @@ const goToLogin = () => {
         <div class="p-8">
           <div class="text-center mb-6">
             <h1 class="text-2xl font-bold font-serif text-lumina-text mb-2">
-              Campaign Invitation
+              Convite de Campanha
             </h1>
             <p class="text-sm text-lumina-text-muted">
-              You've been invited to join
+              Você foi convidado para participar de
             </p>
           </div>
 
@@ -163,29 +160,22 @@ const goToLogin = () => {
           <!-- Not Logged In Warning -->
           <div v-if="!isLoggedIn" class="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-4 mb-6">
             <p class="text-sm text-yellow-500 mb-3">
-              You need to be logged in to accept this invitation
+              Você precisa estar logado para aceitar este convite.
             </p>
-            <Button
-              @click="goToLogin"
-              class="w-full bg-lumina-text text-lumina-bg hover:bg-white"
-            >
-              Login to Accept
+            <Button @click="goToLogin" class="w-full bg-lumina-text text-lumina-bg hover:bg-white">
+              Fazer Login para Aceitar
             </Button>
           </div>
 
           <!-- Accept Button -->
-          <Button
-            v-else
-            @click="handleAccept"
-            :disabled="accepting"
-            class="w-full bg-lumina-detail text-lumina-bg hover:bg-lumina-detail/90 font-semibold"
-          >
+          <Button v-else @click="handleAccept" :disabled="accepting"
+            class="w-full bg-lumina-detail text-lumina-bg hover:bg-lumina-detail/90 font-semibold">
             <Loader2 v-if="accepting" class="h-4 w-4 mr-2 animate-spin" />
-            {{ accepting ? 'Accepting...' : 'Accept Invitation' }}
+            {{ accepting ? 'Aceitando...' : 'Aceitar Convite' }}
           </Button>
 
           <p class="text-xs text-center text-lumina-text-muted mt-4">
-            Invited by {{ invitation.username_or_email }}
+            Convidado por {{ invitation.username_or_email }}
           </p>
         </div>
       </div>
