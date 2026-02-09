@@ -73,7 +73,7 @@ watch(() => props.open, (newVal) => {
 
 const addAbility = () => {
     formData.value.abilities.push({
-        name: 'New Ability',
+        name: 'Nova Habilidade',
         description: '',
         attack_formula: '',
         damage_formula: ''
@@ -117,7 +117,7 @@ const handleOpenNote = () => {
                 <DialogTitle class="font-serif text-xl">{{ npc ? 'Editar NPC' : 'Criar NPC' }}</DialogTitle>
                 <DialogDescription class="text-lumina-text-muted">
                     Adicione uma nova criatura ao seu bestiário ({{ system === 'dnd5e' ? 'D&D 5e' : (system === 'pf2e' ?
-                    'Pathfinder 2e' : 'Genérico') }}).
+                        'Pathfinder 2e' : 'Genérico') }}).
                 </DialogDescription>
             </DialogHeader>
 

@@ -123,7 +123,7 @@ const onDrop = (event, dropIndex) => {
             <div class="flex gap-2">
                 <Button size="sm" variant="outline" class="flex-1 h-7 text-xs border-lumina-border hover:bg-lumina-bg"
                     @click="addParticipant">
-                    <Plus class="h-3 w-3 mr-1" /> Add
+                    <Plus class="h-3 w-3 mr-1" /> Adic.
                 </Button>
                 <Button size="sm" variant="outline" class="flex-1 h-7 text-xs border-lumina-border hover:bg-lumina-bg"
                     @click="sortInitiative">
@@ -137,7 +137,7 @@ const onDrop = (event, dropIndex) => {
             </div>
 
             <div class="flex items-center justify-between text-xs font-mono text-muted-foreground pt-1">
-                <span>Round: {{ round }}</span>
+                <span>Rodada: {{ round }}</span>
             </div>
         </div>
 

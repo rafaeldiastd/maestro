@@ -7,7 +7,7 @@
       </Button>
 
       <span class="text-xs font-mono text-muted-foreground min-w-[3rem] text-center">{{ Math.round(zoom * 100)
-      }}%</span>
+        }}%</span>
 
       <Button @click="$emit('zoom-out')" variant="ghost" size="sm" class="h-8 w-8 p-0">
         <ZoomOut class="h-4 w-4" />
@@ -18,13 +18,13 @@
       <!-- Grid Toggle -->
       <Button @click="$emit('toggle-grid')" :variant="showGrid ? 'default' : 'secondary'" size="sm" class="gap-2">
         <Grid3X3 class="h-3.5 w-3.5" />
-        Grid
+        Grade
       </Button>
 
       <!-- Settings -->
       <Button @click="$emit('open-settings')" variant="default" size="sm" class="gap-2">
         <Settings class="h-3.5 w-3.5" />
-        Settings
+        Config.
       </Button>
 
       <!-- Layers Dropdown -->
@@ -40,16 +40,16 @@
           <button @click="selectLayer('map')"
             class="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
             :class="currentLayer === 'map' ? 'text-foreground font-bold' : 'text-muted-foreground'">
-            Map Layer
+            Camada Mapa
           </button>
           <button @click="selectLayer('gm')" class="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
             :class="currentLayer === 'gm' ? 'text-foreground font-bold' : 'text-muted-foreground'">
-            GM Layer
+            Camada GM
           </button>
           <button @click="selectLayer('tokens')"
             class="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
             :class="currentLayer === 'tokens' ? 'text-foreground font-bold' : 'text-muted-foreground'">
-            Tokens Layer
+            Camada Tokens
           </button>
         </div>
       </div>
@@ -63,19 +63,19 @@
         <Button @click="$emit('select-tool', 'move')" :variant="currentTool === 'move' ? 'secondary' : 'ghost'"
           size="sm" class="h-7 px-2 gap-2">
           <MousePointer2 class="h-3.5 w-3.5" />
-          <span class="sr-only">Move</span>
+          <span class="sr-only">Mover</span>
         </Button>
 
         <Button @click="$emit('select-tool', 'draw')" :variant="currentTool === 'draw' ? 'secondary' : 'ghost'"
-          size="sm" class="h-7 px-2 gap-2" disabled title="Draw (Coming Soon)">
+          size="sm" class="h-7 px-2 gap-2" disabled title="Desenhar (Em Breve)">
           <Pencil class="h-3.5 w-3.5" />
-          <span class="sr-only">Draw</span>
+          <span class="sr-only">Desenhar</span>
         </Button>
 
         <Button @click="$emit('select-tool', 'clear')" variant="ghost" size="sm" class="h-7 px-2 gap-2" disabled
-          title="Clear (Coming Soon)">
+          title="Limpar (Em Breve)">
           <Ban class="h-3.5 w-3.5" />
-          <span class="sr-only">Clear</span>
+          <span class="sr-only">Limpar</span>
         </Button>
       </div>
     </div>
@@ -110,11 +110,11 @@ const layersOpen = ref(false)
 
 const currentLayerLabel = computed(() => {
   const labels = {
-    map: 'Map',
+    map: 'Mapa',
     gm: 'GM',
     tokens: 'Tokens'
   }
-  return labels[props.currentLayer] || 'Map'
+  return labels[props.currentLayer] || 'Mapa'
 })
 
 const selectLayer = (layer) => {

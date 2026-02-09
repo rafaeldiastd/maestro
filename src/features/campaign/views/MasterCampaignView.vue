@@ -2,7 +2,8 @@
   <div class="flex h-screen w-screen bg-lumina-bg text-lumina-text overflow-hidden">
 
     <!-- Icon Sidebar -->
-    <IconSidebar :items="sidebarItems" :activeItem="activeSidebar" @select="handleSidebarSelect" @dblclick="handleSidebarDblClick">
+    <IconSidebar :items="sidebarItems" :activeItem="activeSidebar" @select="handleSidebarSelect"
+      @dblclick="handleSidebarDblClick">
 
       <template #bottom>
         <Button variant="ghost" size="icon"
@@ -155,10 +156,9 @@
         <div class="flex-1 overflow-hidden">
           <AssetManagerModal :assets="assets" :folders="folders" :current-folder-id="currentFolderId"
             :view-mode="viewMode" :blur-mode="blurMode" :is-uploading="isUploading" :get-asset-url="getAssetUrl"
-            :is-picker="isPickingImage"
-            @create-folder="createFolder" @open-folder="openFolder" @delete-folder="deleteFolder"
-            @move-asset="moveAssetToFolder" @file-upload="onFileChange" @file-drop="onFileDrop"
-            @open-lightbox="openLightbox" @rename="renameAsset" @delete="deleteAsset"
+            :is-picker="isPickingImage" @create-folder="createFolder" @open-folder="openFolder"
+            @delete-folder="deleteFolder" @move-asset="moveAssetToFolder" @file-upload="onFileChange"
+            @file-drop="onFileDrop" @open-lightbox="openLightbox" @rename="renameAsset" @delete="deleteAsset"
             @update:viewMode="viewMode = $event" @toggle-blur="toggleBlur" @pick="handleAssetPick" />
         </div>
       </div>
@@ -201,8 +201,11 @@
 
     <!-- NPC Sheet (Preview) -->
     <div
-      class="fixed left-96 top-0 bottom-0 z-30 w-[400px] bg-lumina-card/95 backdrop-blur-xl transition-all duration-300 shadow-2xl border-r border-lumina-border"
-      :class="activeNpcSheet ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0 pointer-events-none'">
+      class="fixed top-0 bottom-0 z-30 w-[400px] bg-lumina-card/95 backdrop-blur-xl transition-all duration-300 shadow-2xl border-r border-lumina-border"
+      :class="[
+        activeSidebar === 'bestiary' ? 'left-96' : 'left-16',
+        activeNpcSheet ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0 pointer-events-none'
+      ]">
       <NPCSheet v-if="activeNpcSheet" :npc="activeNpcSheet" :system="campaignSystem" @close="activeNpcSheet = null"
         @edit="handleEditNpcFromSheet" @open-note="handleOpenNpcNoteFromSheet" @update-hp="handleSaveNpc"
         @save="handleSaveNpc" @roll="handleNpcAbilityRoll" @chat="handleNpcAbilityChat" />
@@ -231,37 +234,33 @@
     <!-- Draggable Floating Sidebar -->
     <DraggableModal v-if="activeFloatingSidebar"
       :title="sidebarItems.find(i => i.id === activeFloatingSidebar)?.label || 'Janela'"
-      :icon="sidebarItems.find(i => i.id === activeFloatingSidebar)?.icon" 
-      :modelValue="true" 
-      @update:modelValue="activeFloatingSidebar = null"
-      :defaultWidth="400" :defaultHeight="600"
-      class="z-50">
-      
+      :icon="sidebarItems.find(i => i.id === activeFloatingSidebar)?.icon" :modelValue="true"
+      @update:modelValue="activeFloatingSidebar = null" :defaultWidth="400" :defaultHeight="600" class="z-50">
+
       <!-- Shared Sidebar Content Wrapper -->
       <div v-if="activeFloatingSidebar === 'assets'" class="h-full">
-         <AssetManagerModal :assets="assets" :folders="folders" :current-folder-id="currentFolderId"
-            :view-mode="viewMode" :blur-mode="blurMode" :is-uploading="isUploading" :get-asset-url="getAssetUrl"
-            :is-picker="isPickingImage"
-            @create-folder="createFolder" @open-folder="openFolder" @delete-folder="deleteFolder"
-            @move-asset="moveAssetToFolder" @file-upload="onFileChange" @file-drop="onFileDrop"
-            @open-lightbox="openLightbox" @rename="renameAsset" @delete="deleteAsset"
-            @update:viewMode="viewMode = $event" @toggle-blur="toggleBlur" @pick="handleAssetPick" />
+        <AssetManagerModal :assets="assets" :folders="folders" :current-folder-id="currentFolderId"
+          :view-mode="viewMode" :blur-mode="blurMode" :is-uploading="isUploading" :get-asset-url="getAssetUrl"
+          :is-picker="isPickingImage" @create-folder="createFolder" @open-folder="openFolder"
+          @delete-folder="deleteFolder" @move-asset="moveAssetToFolder" @file-upload="onFileChange"
+          @file-drop="onFileDrop" @open-lightbox="openLightbox" @rename="renameAsset" @delete="deleteAsset"
+          @update:viewMode="viewMode = $event" @toggle-blur="toggleBlur" @pick="handleAssetPick" />
       </div>
 
       <div v-else-if="activeFloatingSidebar === 'bestiary'" class="h-full relative">
-         <BestiarySidebar :npcs="npcs" @create="openNpcModal(null)" @edit="openNpcModal" @delete="deleteNpc"
+        <BestiarySidebar :npcs="npcs" @create="openNpcModal(null)" @edit="openNpcModal" @delete="deleteNpc"
           @select="openNpcSheet" @close="activeFloatingSidebar = null" />
       </div>
 
       <div v-else-if="activeFloatingSidebar === 'initiative'" class="h-full">
-         <InitiativeSidebar :participants="initiativeParticipants" :round="initiativeRound"
-        :active-participant-id="initiativeActiveIndex" v-model:is-capturing="isCapturingInitiative"
-        @update:participants="saveInitiative" @next-turn="handleInitiativeNext" @clear="handleInitiativeClear"
-        @close="activeFloatingSidebar = null" />
+        <InitiativeSidebar :participants="initiativeParticipants" :round="initiativeRound"
+          :active-participant-id="initiativeActiveIndex" v-model:is-capturing="isCapturingInitiative"
+          @update:participants="saveInitiative" @next-turn="handleInitiativeNext" @clear="handleInitiativeClear"
+          @close="activeFloatingSidebar = null" />
       </div>
 
       <div v-else-if="activeFloatingSidebar === 'notes'" class="h-full">
-         <NotesSidebar :is-open="true" :folders="noteFolders" :notes="notes" @close="activeFloatingSidebar = null"
+        <NotesSidebar :is-open="true" :folders="noteFolders" :notes="notes" @close="activeFloatingSidebar = null"
           @create-note="createNote" @create-folder="createNoteFolder" @delete-note="deleteNote"
           @delete-folder="deleteNoteFolder" @open-note="openNote" @move-item="moveNoteItem" />
       </div>
@@ -271,6 +270,9 @@
       </div>
     </DraggableModal>
 
+    <!-- Roll Configuration Dialog -->
+    <RollConfigurationDialog v-model:open="showRollDialog" :title="pendingRollData?.name || 'Rolar'"
+      @confirm="handleConfirmRoll" />
   </div>
 </template>
 
@@ -303,6 +305,7 @@ import MapCreateSidebar from '@/features/maps/components/MapCreateSidebar.vue'
 import MapSettingsSidebar from '@/features/maps/components/MapSettingsSidebar.vue'
 import Lightbox from '@/components/shared/Lightbox.vue'
 import ChatSidebar from '@/features/chat/components/ChatSidebar.vue'
+import RollConfigurationDialog from '@/features/chat/components/RollConfigurationDialog.vue'
 import { Button } from '@/components/ui/button'
 
 // --- State ---
@@ -552,7 +555,7 @@ const handleSidebarSelect = (itemId) => {
     // If opening fixed sidebar, close floating one of same type (optional, but good for consistency)
     if (activeFloatingSidebar.value === itemId) activeFloatingSidebar.value = null
   }
-  
+
   // Close picker mode if switching away from assets
   if (itemId !== 'assets') {
     isPickingImage.value = false
@@ -633,15 +636,15 @@ const handlePickImageForCreate = () => {
     pickerCallback.value = null
     isPickingImage.value = false
   }
-  
+
   activeSidebar.value = 'assets' // Open Sidebar
   // Removed broken modals.assets.open = true
 }
 
 const handleAssetPick = (asset) => {
-    if (pickerCallback.value && asset) {
-        pickerCallback.value(getAssetUrl(asset))
-    }
+  if (pickerCallback.value && asset) {
+    pickerCallback.value(getAssetUrl(asset))
+  }
 }
 
 const handleSaveNewMap = async (mapData) => {
@@ -758,7 +761,8 @@ const bringToFront = (modalId) => {
 // --- Bestiary Functions ---
 const openNpcSheet = (npc) => {
   activeNpcSheet.value = npc
-  if (modals.notes.open) modals.notes.open = false
+  // Close note editor if open to avoid overlap
+  if (activeNote.value) activeNote.value = null
 }
 
 const handleEditNpcFromSheet = (npc) => {
@@ -792,6 +796,87 @@ const fetchNpcs = async () => {
 const openNpcModal = (npc) => {
   activeNpc.value = npc
   showNpcModal.value = true
+}
+
+// --- Roll Dialog State ---
+const showRollDialog = ref(false)
+const pendingRollData = ref(null)
+
+const handleNpcAbilityRoll = (rollData) => {
+  // rollData: { name, type, formula }
+  pendingRollData.value = rollData
+  showRollDialog.value = true
+}
+
+const handleConfirmRoll = async (mode) => {
+  if (!pendingRollData.value) return
+  await executeNpcRoll(pendingRollData.value, mode)
+  showRollDialog.value = false
+  pendingRollData.value = null
+}
+
+const executeNpcRoll = async (ability, mode) => {
+  if (!ability) return
+  const context = activeNpcSheet.value || activeNpc.value
+  if (!context) return
+
+  let baseFormula = ''
+  let rollType = 'generic'
+  let damageFormula = null
+
+  // 1. Determine Base Formula & Type
+  if (ability.attack_formula) {
+    baseFormula = ability.attack_formula
+    rollType = 'attack'
+    if (ability.damage_formula) {
+      damageFormula = ability.damage_formula
+    }
+  } else if (ability.damage_formula) {
+    baseFormula = ability.damage_formula
+    rollType = 'damage'
+  } else if (ability.formula) {
+    baseFormula = ability.formula
+    rollType = ability.context || 'generic'
+  } else if (ability.effect) {
+    // Regex fallback from old code
+    const diceMatch = ability.effect.match(/(\d+d\d+[\s\+\-\d]*)/)
+    if (diceMatch) {
+      baseFormula = diceMatch[0]
+      rollType = 'generic'
+    } else {
+      // Just chat message?
+      // TODO: Handle non-roll effects if needed
+      return
+    }
+  }
+
+  if (!baseFormula) return
+
+  // 2. Resolve Variables FIRST (to get "1d20 + 3")
+  let resolvedFormula = resolveVariables(baseFormula, context)
+
+  // 3. Apply Mode (Advantage/Disadvantage)
+  // Replace 1d20 or d20 with 2d20kh1/kl1
+  if (mode === 'advantage') {
+    resolvedFormula = resolvedFormula.replace(/1d20/g, '2d20kh1').replace(/(?<!\d)d20/g, '2d20kh1')
+  } else if (mode === 'disadvantage') {
+    resolvedFormula = resolvedFormula.replace(/1d20/g, '2d20kl1').replace(/(?<!\d)d20/g, '2d20kl1')
+  }
+
+  // 4. Roll
+  const rollResult = roll(resolvedFormula, `${context.name} - ${ability.name}`, rollType)
+
+  if (rollResult) {
+    rollResult.name = 'Mestre'
+    rollResult.avatar = context.avatar || null
+
+    // 5. Handle Damage (Resolve only, mode doesn't apply usually)
+    if (damageFormula) {
+      rollResult.damageFormula = resolveVariables(damageFormula, context)
+    }
+
+    await sendMessage(sessionId, JSON.stringify(rollResult))
+  }
 }
 
 const handleSaveNpc = async (npcData) => {
@@ -936,76 +1021,9 @@ const resolveVariables = (formula, context) => {
   })
 }
 
-const handleNpcAbilityRoll = async (ability) => {
-  if (!ability) return
-  const context = activeNpcSheet.value
 
-  // 1. Explicit Attack Formula (The "To Hit" Roll)
-  if (ability.attack_formula) {
-    const resolvedFormula = resolveVariables(ability.attack_formula, context)
-    const rollResult = roll(resolvedFormula, ability.name, 'attack')
 
-    // Attach Damage Formula for the UI to use (for the "Roll Damage" button)
-    if (ability.damage_formula) {
-      // Resolve damage formula NOW so it works even if sheet is closed later
-      rollResult.damageFormula = resolveVariables(ability.damage_formula, context)
-    }
 
-    if (rollResult) await sendMessage(sessionId, JSON.stringify(rollResult))
-    return
-  }
-
-  // 2. Explicit Damage Formula Only (e.g. Area of Effect, Magic Missile)
-  if (ability.damage_formula) {
-    const resolvedFormula = resolveVariables(ability.damage_formula, context)
-    const rollResult = roll(resolvedFormula, ability.name, 'damage')
-    if (rollResult) await sendMessage(sessionId, JSON.stringify(rollResult))
-    return
-  }
-
-  // [NEW] Support direct formulas (Stats, Init)
-  if (ability.formula) {
-    const resolvedFormula = resolveVariables(ability.formula, context)
-    const rollResult = roll(resolvedFormula, ability.name, ability.context || 'generic')
-    if (rollResult) await sendMessage(sessionId, JSON.stringify(rollResult))
-    return
-  }
-
-  // Check for formula in effect
-  if (ability.effect) {
-    let formula = ability.effect
-
-    // Extract 1d20+5 or 2d6 etc if mixed with text
-    // Regex: digits 'd' digits (optional + or - digits)
-    const diceRegex = /(\d+d\d+(?:\s*[+\-]\s*\d+)?)/i
-    const match = formula.match(diceRegex)
-    if (match) {
-      formula = match[0]
-    }
-
-    // Simple context guessing
-    let contextType = 'generic'
-    const lowerDesc = (ability.description || '').toLowerCase()
-    if (lowerDesc.includes('attack') || lowerDesc.includes('hit')) contextType = 'attack'
-    else if (lowerDesc.includes('damage')) contextType = 'damage'
-    else if (lowerDesc.includes('save') || lowerDesc.includes('saving throw')) contextType = 'save'
-    else if (lowerDesc.includes('cure') || lowerDesc.includes('heal')) contextType = 'spell'
-
-    const rollResult = roll(formula, ability.name, contextType)
-
-    if (rollResult) {
-      // Send as JSON
-      await sendMessage(sessionId, JSON.stringify(rollResult))
-    } else {
-      // Fallback text if roll fails
-      await sendMessage(sessionId, `**${ability.name}**\n${ability.effect}`)
-    }
-  } else {
-    // Just text
-    const content = `**${ability.name}**\n${ability.description}`
-    await sendMessage(sessionId, content)
-  }
-}
 
 
 // --- Lifecycle ---

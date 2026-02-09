@@ -16,9 +16,9 @@
          <div class="space-y-1">
             <h1
                class="text-lg font-bold font-serif tracking-tight text-lumina-text break-words leading-tight line-clamp-2">
-               {{ sessionName || 'Untitled Session' }}
+               {{ sessionName || 'Sessão Sem Título' }}
             </h1>
-            <span class="text-[10px] uppercase tracking-widest text-lumina-text-muted font-medium">Explorer</span>
+            <span class="text-[10px] uppercase tracking-widest text-lumina-text-muted font-medium">Explorador</span>
          </div>
       </div>
 
@@ -40,7 +40,7 @@
                   </div>
                   <p
                      class="text-[10px] font-medium text-lumina-text-muted group-hover:text-lumina-accent transition-colors">
-                     {{ isUploading ? 'Uploading...' : 'Drop images' }}
+                     {{ isUploading ? 'Enviando...' : 'Arraste imagens' }}
                   </p>
                </div>
             </div>
@@ -49,27 +49,27 @@
             <div class="space-y-4">
                <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Link class="h-3 w-3" />
-                  Quick Links
+                  Links Rápidos
                </h3>
 
                <div class="grid gap-3">
                   <div class="space-y-1.5">
-                     <Label class="text-xs text-muted-foreground">Player Link</Label>
+                     <Label class="text-xs text-muted-foreground">Link para Jogadores</Label>
                      <Button variant="outline"
                         class="w-full justify-between bg-muted/50 border-border text-muted-foreground hover:text-foreground hover:bg-muted h-9 text-xs"
                         @click="$emit('copy-join')">
-                        <span class="truncate max-w-[120px]">Join Session</span>
+                        <span class="truncate max-w-[120px]">Entrar na Sessão</span>
                         <component :is="linkJoinCopied ? Check : Copy" class="h-3 w-3 ml-2 shrink-0"
                            :class="linkJoinCopied ? 'text-green-500' : ''" />
                      </Button>
                   </div>
 
                   <div class="space-y-1.5">
-                     <Label class="text-xs text-muted-foreground">Stream Overlay</Label>
+                     <Label class="text-xs text-muted-foreground">Overlay para Stream</Label>
                      <Button variant="outline"
                         class="w-full justify-between bg-muted/50 border-border text-muted-foreground hover:text-foreground hover:bg-muted h-9 text-xs"
                         @click="$emit('copy-stream')">
-                        <span class="truncate max-w-[120px]">OBS / Browser</span>
+                        <span class="truncate max-w-[120px]">OBS / Navegador</span>
                         <component :is="linkCopied ? Check : Copy" class="h-3 w-3 ml-2 shrink-0"
                            :class="linkCopied ? 'text-green-500' : ''" />
                      </Button>
@@ -82,13 +82,13 @@
             <!-- Danger Zone -->
             <div class="space-y-4">
                <h3 class="text-xs font-semibold uppercase tracking-wider text-destructive/80 flex items-center gap-2">
-                  Danger Zone
+                  Zona de Perigo
                </h3>
                <Button variant="destructive"
                   class="w-full justify-start bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive border border-destructive/20"
                   @click="$emit('end-session')">
                   <Trash2 class="mr-2 h-4 w-4" />
-                  End Session
+                  Encerrar Sessão
                </Button>
             </div>
 

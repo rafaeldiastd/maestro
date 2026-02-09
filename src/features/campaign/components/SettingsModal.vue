@@ -63,7 +63,7 @@
       <div class="mt-8 flex justify-end">
         <button @click="save"
           class="w-full rounded-lg bg-white py-2.5 text-sm font-bold text-slate-900 hover:bg-slate-200 transition-colors">
-          Apply Changes
+          Aplicar Alterações
         </button>
       </div>
     </div>

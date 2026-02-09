@@ -10,8 +10,9 @@ import ChatMessage from './ChatMessage.vue'
 import ChatRecipientSelector from './ChatRecipientSelector.vue'
 import ChatDiceSelector from './ChatDiceSelector.vue'
 import { useDiceRoll } from '@/composables/useDiceRoll'
+import { useCharacter } from '@/composables/useCharacter'
+import { supabase } from '@/lib/supabaseClient'
 
-// ...
 const props = defineProps({
   campaignId: {
     type: String,
@@ -36,46 +37,65 @@ const props = defineProps({
   isCapturing: {
     type: Boolean,
     default: false
+  },
+  activeCharacter: {
+    type: Object,
+    default: null
   }
 })
 
-
-
 const emit = defineEmits(['toggle', 'add-initiative'])
+
+const { fetchCampaignCharacters } = useCharacter()
+
+// State
+const charactersMap = ref({})
+const sidebarWidth = ref(320)
+const isResizing = ref(false)
+const sessionOwnerId = ref(null) // [NEW]
 
 // Sum/Calculator Mode State
 const isSumming = ref(false)
 const selectedMessageIds = ref(new Set())
+const currentRollMode = ref('normal') // [NEW] Track roll mode
 
 const toggleSumMode = () => {
   isSumming.value = !isSumming.value
-  selectedMessageIds.value.clear()
+  selectedMessageIds.value = new Set()
+}
+
+const clearSelection = () => {
+  selectedMessageIds.value = new Set()
 }
 
 const toggleSelection = (msgId) => {
-  if (selectedMessageIds.value.has(msgId)) {
-    selectedMessageIds.value.delete(msgId)
+  const newSet = new Set(selectedMessageIds.value)
+  if (newSet.has(msgId)) {
+    newSet.delete(msgId)
   } else {
-    selectedMessageIds.value.add(msgId)
+    newSet.add(msgId)
   }
+  selectedMessageIds.value = newSet
 }
 
 const selectionTotal = computed(() => {
   let total = 0
+
   selectedMessageIds.value.forEach(id => {
     const msg = messages.value.find(m => m.id === id)
     if (msg) {
       try {
         const data = JSON.parse(msg.content)
-        if (data && data.total) {
+        if (data && (typeof data.total === 'number' || data.total)) {
           total += parseInt(data.total)
         }
-      } catch (e) { }
+      } catch (e) {
+        // Not JSON
+      }
     }
   })
   return total
 })
-
 
 // Composables
 const chatStore = useChatStore()
@@ -111,8 +131,27 @@ const historyIndex = ref(-1)
 
 // Load Data
 onMounted(async () => {
+  // [NEW] Fetch Session Owner
+  const { data: sessionData } = await supabase
+    .from('sessions')
+    .select('owner_id')
+    .eq('id', props.campaignId)
+    .single()
+
+  if (sessionData) {
+    sessionOwnerId.value = sessionData.owner_id
+  }
+
   const { data: membersData } = await getMembers(props.campaignId)
   if (membersData) members.value = membersData
+
+  // [NEW] Fetch Characters Map
+  const chars = await fetchCampaignCharacters(props.campaignId)
+  if (chars) {
+    chars.forEach(c => {
+      charactersMap.value[c.user_id] = c
+    })
+  }
 
   await loadMessages(props.campaignId)
   lastSeenCount.value = messages.value.length
@@ -148,29 +187,7 @@ watch(() => messages.value.length, async (newCount, oldCount) => {
 
   await nextTick()
   if (messagesContainer.value) {
-    // Force scroll to bottom for now as requested
     scrollToBottom()
-  }
-})
-
-// Simplified approach: remove the GLOBAL scroll to bottom watcher and use specific calls.
-// 1. On Mount -> loadMessages -> scrollToBottom()
-// 2. On Send/Receive -> scrollToBottom() (if user is near bottom?)
-// 3. On Load More -> handleScroll restores position.
-
-// Existing watcher for unread count is fine.
-watch(() => messages.value.length, (newCount, oldCount) => {
-  if (!props.isOpen && newCount > oldCount) {
-    unreadCount.value += (newCount - oldCount)
-  }
-
-  // Check if the change was an APPEND (new message)
-  if (messages.value.length > 0 && oldCount > 0) {
-    const lastOld = messages.value[oldCount - 1]
-    // This logic is flawed if we pre-pend.
-    // If we prepend 20 msgs, the previous last message is now at index 20 + oldLen - 1...
-    // Let's just manually call scrollToBottom where appropriate (sendMessage, socket)
-    // AND for initial load.
   }
 })
 
@@ -207,41 +224,83 @@ const handleKeyDown = (e) => {
 const calculateModifier = (val) => Math.floor((val - 10) / 2)
 
 const resolveVariables = (formula) => {
-  // Debug Log
-  // console.log('Resolving variables for:', formula, 'Context:', props.activeContext)
+  // 1. Determine Context
+  const context = props.activeContext || props.activeCharacter || {}
 
-  if (!props.activeContext || !formula.includes('@')) return formula
+  if (!formula.includes('@')) return formula
 
   return formula.replace(/@(\w+)/g, (match, key) => {
     const lowerKey = key.toLowerCase()
 
-    // 1. Check Modifiers (e.g. dexMod)
-    if (lowerKey.endsWith('mod')) {
-      const stat = lowerKey.replace('mod', '') // 'str'
-      if (props.activeContext.stats) {
-        // Try lowercase first (standard), then as-is (just in case)
-        // Note: NPCModal uses lowercase keys (str, dex...)
-        const val = props.activeContext.stats[stat]
-        if (val !== undefined) {
-          return calculateModifier(val)
-        }
+    // 2. Check Context for Stats
+    if (context.stats) {
+      // Check Modifiers
+      if (lowerKey.endsWith('mod')) {
+        const stat = lowerKey.replace('mod', '')
+        const val = context.stats[stat]
+        if (val !== undefined) return calculateModifier(val)
       }
-    }
-
-    // 2. Check Stats directly (e.g. dex)
-    if (props.activeContext.stats) {
-      const val = props.activeContext.stats[lowerKey]
+      // Check Stats directly
+      const val = context.stats[lowerKey]
       if (val !== undefined) return val
     }
 
-    // 3. Check Top-level (e.g. hp, ac)
-    const topVal = props.activeContext[lowerKey]
+    // 3. Check Top-level properties
+    const topVal = context[lowerKey]
     if (topVal !== undefined) return topVal
 
-    console.warn(`Variable @${key} not found in context`, props.activeContext)
-    return match
+    // 4. Default / Fallback
+    console.warn(`Variable @${key} not found in context`, context)
+    return '0' // Replace with 0 to prevent SyntaxError in DiceRoller
   })
 }
+
+// Helpers to resolve names
+const getAuthorName = (userId) => {
+  // 1. Check if DM (Owner)
+  if (sessionOwnerId.value && userId === sessionOwnerId.value) {
+    return 'Mestre'
+  }
+
+  // 2. Character Name
+  if (charactersMap.value[userId]) {
+    return charactersMap.value[userId].name
+  }
+
+  // 3. Fallbacks
+  if (userId === props.currentUserId) {
+    if (props.isOwner) return 'Mestre' // Redundant if sessionOwnerId matches, but safe
+    if (props.activeCharacter) return props.activeCharacter.name
+    return 'Você'
+  }
+
+  // 4. Member Email
+  const member = members.value.find(m => m.user_id === userId)
+  return member ? (member.email?.split('@')[0] || 'Desconhecido') : 'Desconhecido'
+  // ... existing getAuthorName ...
+  return member ? (member.email?.split('@')[0] || 'Desconhecido') : 'Desconhecido'
+}
+
+const getAuthorAvatar = (userId) => {
+  // 1. Character Map (for everyone)
+  if (charactersMap.value[userId]?.avatar_url) {
+    return charactersMap.value[userId].avatar_url
+  }
+
+  // 2. Local Active Character (fallback or immediate update)
+  if (userId === props.currentUserId && props.activeCharacter?.avatar_url) {
+    return props.activeCharacter.avatar_url
+  }
+
+  // 3. DM Avatar? (Maybe future)
+  if (sessionOwnerId.value && userId === sessionOwnerId.value) {
+    // Return DM specific avatar if we had one, for now null lets it default to initial
+    return null
+  }
+
+  return null
+}
+
 
 const handleSend = async () => {
   const content = newMessage.value.trim()
@@ -251,9 +310,9 @@ const handleSend = async () => {
 
   // Add to local history
   msgHistory.value.push(content)
-  historyIndex.value = -1 // Reset history pointer
+  historyIndex.value = -1
 
-  newMessage.value = '' // Optimistic clear
+  newMessage.value = ''
 
   try {
     // Check for commands
@@ -262,6 +321,16 @@ const handleSend = async () => {
         .replace(/^\/(r|roll)\s+/, '')
         .replace(/^\/(init|iniciativa)\s+/, '')
 
+      // [NEW] Apply Roll Mode (Advantage/Disadvantage)
+      if (currentRollMode.value !== 'normal') {
+        const replacement = currentRollMode.value === 'advantage' ? '2d20kh1' : '2d20kl1'
+        if (formula.includes('1d20')) {
+          formula = formula.replace(/1d20/g, replacement)
+        } else if (formula.includes('d20')) {
+          formula = formula.replace(/(?<!\d)d20/g, replacement)
+        }
+      }
+
       // Determine context
       let context = 'generic'
       if (content.startsWith('/init') || content.startsWith('/iniciativa')) {
@@ -269,18 +338,37 @@ const handleSend = async () => {
       }
 
       // Resolve Variables
-      formula = resolveVariables(formula)
+      // Check for split syntax (Attack # Damage)
+      let finalFormulaStr = formula
+      if (formula.includes('#')) {
+        const parts = formula.split('#')
+        const attack = resolveVariables(parts[0].trim())
+        const damage = resolveVariables(parts[1].trim())
+        finalFormulaStr = `${attack} # ${damage}`
+      } else {
+        finalFormulaStr = resolveVariables(formula)
+      }
 
-      const rollResult = roll(formula, context === 'initiative' ? 'Iniciativa' : 'Rolagem', context)
+      const rollResult = roll(finalFormulaStr, context === 'initiative' ? 'Iniciativa' : 'Rolagem', context)
 
       if (rollResult) {
         // Inject Author Name for Initiative Tracker
         if (props.activeContext && props.activeContext.name) {
           rollResult.name = props.activeContext.name
         } else {
-          const me = members.value.find(m => m.user_id === props.currentUserId)
-          rollResult.name = me ? (me.email?.split('@')[0]) : 'Você'
+          rollResult.name = getAuthorName(props.currentUserId)
         }
+
+        // Preserve original formula (with @ variables)
+        rollResult.originalFormula = content
+          .replace(/^\/(r|roll)\s+/, '')
+          .replace(/^\/(init|iniciativa)\s+/, '')
+
+        if (rollResult.originalFormula.includes('#')) {
+          rollResult.originalDamageFormula = rollResult.originalFormula.split('#')[1].trim()
+        }
+
+        console.log('Sending Roll Result (Standard):', rollResult)
 
         await sendMessage(props.campaignId, JSON.stringify(rollResult), selectedRecipient.value)
       } else {
@@ -300,36 +388,49 @@ const handleSend = async () => {
 
 const handleDelete = async (msgId) => {
   if (confirm('Excluir esta mensagem?')) {
-    // Optimistic Update
     const prevMessages = [...messages.value]
     messages.value = messages.value.filter(m => m.id !== msgId)
 
     const result = await deleteMessage(msgId)
     if (!result.success) {
-      // Revert if failed
       messages.value = prevMessages
       alert('Falha ao excluir mensagem')
     }
   }
 }
 
-// Helpers to resolve names
-const getAuthorName = (userId) => {
-  if (userId === props.currentUserId) return 'Você'
-  const member = members.value.find(m => m.user_id === userId)
-  return member ? (member.email?.split('@')[0] || 'Desconhecido') : 'Desconhecido'
-}
-
-const handleRollDamage = async (formula) => {
+const handleRollDamage = async (payload) => {
   try {
-    let finalFormula = formula
-    // Try to resolve variables if context is active
-    if (props.activeContext) {
-      finalFormula = resolveVariables(formula)
-    }
+    const formula = typeof payload === 'object' ? payload.formula : payload
+    const overrideName = typeof payload === 'object' ? payload.name : null
+
+    let finalFormula = resolveVariables(formula)
 
     const rollResult = roll(finalFormula, 'Dano', 'damage')
     if (rollResult) {
+      // Preserve original formula
+      rollResult.originalFormula = formula
+      // 1. Set Name
+      // Use override if present (from original attack), else use current author
+      rollResult.name = overrideName || getAuthorName(props.currentUserId)
+
+      // 2. Set Avatar
+      // Try to find avatar for this name in characters map if we are overriding
+      // (This helps when DM rolls damage for a character)
+      if (overrideName) {
+        const foundChar = Object.values(charactersMap.value).find(c => c.name === overrideName)
+        if (foundChar && foundChar.avatar_url) {
+          rollResult.avatar = foundChar.avatar_url
+        }
+      } else {
+        // If we are just rolling ourselves, getAuthorAvatar might be used by ChatMessage based on ID, 
+        // but we can also inject it to be explicit.
+        const myAvatar = getAuthorAvatar(props.currentUserId)
+        if (myAvatar) rollResult.avatar = myAvatar
+      }
+
+      console.log('Sending Roll Result (Damage):', rollResult)
+
       await sendMessage(props.campaignId, JSON.stringify(rollResult), selectedRecipient.value)
     }
   } catch (e) {
@@ -341,6 +442,8 @@ const handleQuickRoll = async (formula) => {
   try {
     const rollResult = roll(formula, 'Rolagem Rápida', 'generic')
     if (rollResult) {
+      rollResult.originalFormula = formula
+      rollResult.name = getAuthorName(props.currentUserId) // Inject name
       await sendMessage(props.campaignId, JSON.stringify(rollResult), selectedRecipient.value)
     }
   } catch (e) {
@@ -348,23 +451,52 @@ const handleQuickRoll = async (formula) => {
   }
 }
 
+const startResize = (e) => {
+  isResizing.value = true
+  document.addEventListener('mousemove', doResize)
+  document.addEventListener('mouseup', stopResize)
+  document.body.style.userSelect = 'none'
+}
+
+const doResize = (e) => {
+  if (!isResizing.value) return
+  const newWidth = window.innerWidth - e.clientX
+  if (newWidth >= 280 && newWidth <= 350) {
+    sidebarWidth.value = newWidth
+  } else if (newWidth < 280) {
+    sidebarWidth.value = 280
+  } else if (newWidth > 350) {
+    sidebarWidth.value = 350
+  }
+}
+
+const stopResize = () => {
+  isResizing.value = false
+  document.removeEventListener('mousemove', doResize)
+  document.removeEventListener('mouseup', stopResize)
+  document.body.style.userSelect = ''
+}
 </script>
 
 <template>
-  <div class="fixed right-0 top-0 bottom-0 z-[100] flex flex-col transition-all duration-300 pointer-events-none"
-    :class="isOpen ? 'w-96 translate-x-0' : 'w-0 translate-x-0'">
+  <div class="fixed right-0 top-0 bottom-0 z-[100] flex flex-col transition-all duration-300 ease-out"
+    :style="{ width: isOpen ? sidebarWidth + 'px' : '0px', transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }">
+    <!-- Resize Handle -->
+    <div v-if="isOpen"
+      class="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-lumina-detail/50 z-50 transition-colors"
+      :class="{ 'bg-lumina-detail/50': isResizing }" @mousedown="startResize"></div>
+
     <!-- Main Sidebar Content -->
-    <div v-show="isOpen"
-      class="flex-1 flex flex-col bg-card border-l border-border shadow-2xl pointer-events-auto h-full">
+    <div v-show="isOpen" class="flex-1 flex flex-col bg-card border-l border-border shadow-2xl h-full w-full">
 
       <!-- Header -->
       <div class="h-14 shrink-0 border-b border-lumina-border flex items-center justify-between px-4 bg-card">
         <div class="flex items-center gap-2">
           <MessageSquare class="h-4 w-4 text-lumina-detail" />
-          <span class="text-sm font-bold text-lumina-text font-serif tracking-wide">Chat do Grupo</span>
+          <span class="text-base font-bold text-lumina-text font-serif tracking-wide">Chat do Grupo</span>
         </div>
         <div
-          class="text-[10px] uppercase font-bold text-lumina-text-muted tracking-wider bg-lumina-bg px-2 py-1 rounded border border-lumina-border">
+          class="text-[0.625rem] uppercase font-bold text-lumina-text-muted tracking-wider bg-lumina-bg px-2 py-1 rounded border border-lumina-border">
           {{ members.length }} Online
         </div>
       </div>
@@ -385,16 +517,16 @@ const handleQuickRoll = async (formula) => {
         </div>
 
         <div v-else class="space-y-4">
-          <!-- Date separators could be added here in future -->
           <ChatMessage v-for="msg in messages" :key="msg.id" :message="msg" :senderName="getAuthorName(msg.user_id)"
-            :currentUserId="currentUserId" :isOwner="isOwner" :is-capturing="isCapturing" :selectable="isSumming"
-            :selected="selectedMessageIds.has(msg.id)" @delete="handleDelete" @roll-damage="handleRollDamage"
-            @add-initiative="$emit('add-initiative', $event)" @toggle-select="toggleSelection" />
+            :avatarUrl="getAuthorAvatar(msg.user_id)" :currentUserId="currentUserId" :isOwner="isOwner"
+            :is-capturing="isCapturing" :selectable="isSumming" :selected="selectedMessageIds.has(msg.id)"
+            @delete="handleDelete" @roll-damage="handleRollDamage" @add-initiative="$emit('add-initiative', $event)"
+            @toggle-select="toggleSelection" />
         </div>
       </div>
 
       <!-- Footer Area: Input & Recipient -->
-      <div class="shrink-0 p-4 border-t border-lumina-border bg-card space-y-3">
+      <div class="shrink-0 p-4 border-t border-lumina-border bg-card space-y-3 relative">
 
         <!-- Toolbar: Recipient & Dice -->
         <div class="flex items-center gap-2">
@@ -408,7 +540,7 @@ const handleQuickRoll = async (formula) => {
           <div class="w-px h-6 bg-lumina-border/50"></div>
 
           <!-- Quick Dice -->
-          <ChatDiceSelector @roll="handleQuickRoll" />
+          <ChatDiceSelector :mode="currentRollMode" @update:mode="currentRollMode = $event" @roll="handleQuickRoll" />
 
           <!-- Separator -->
           <div class="w-px h-6 bg-lumina-border/50"></div>
@@ -423,16 +555,18 @@ const handleQuickRoll = async (formula) => {
 
         <!-- Calculator Display (Floating) -->
         <div v-if="isSumming"
-          class="absolute left-4 right-4 -top-16 bg-lumina-card border border-lumina-detail shadow-lg shadow-lumina-detail/10 rounded-lg p-2 flex items-center justify-between z-50 animate-in fade-in slide-in-from-bottom-2">
+          class="bg-lumina-card border border-lumina-border rounded-lg p-2 flex items-center justify-between z-50 animate-in fade-in slide-in-from-bottom-2">
           <div class="flex items-center gap-2 text-xs">
-            <span class="font-bold text-lumina-text-muted uppercase tracking-wider">Selecionados: {{
+            <span class="text-lumina-text-muted uppercase tracking-wider">Selecionados: {{
               selectedMessageIds.size }}</span>
+            <div class="h-4 w-px bg-lumina-border mx-2"></div>
+            <span class="text-lumina-detail text-xs">TOTAL: {{ selectionTotal }}</span>
           </div>
 
           <div class="flex items-center gap-3">
             <div class="h-4 w-px bg-border"></div>
             <Button size="icon" class="h-6 w-6 hover:bg-muted text-muted-foreground hover:text-destructive"
-              @click="selectedMessageIds.clear()" title="Limpar Seleção">
+              @click="clearSelection" title="Limpar Seleção">
               <RotateCcw class="h-3 w-3" />
             </Button>
           </div>
@@ -454,5 +588,5 @@ const handleQuickRoll = async (formula) => {
 </template>
 
 <style scoped>
-/* Scoped styles removed */
+/* Add any scoped styles if needed */
 </style>

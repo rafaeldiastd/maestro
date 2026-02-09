@@ -11,25 +11,25 @@ const props = defineProps({
 
 <template>
   <div class="space-y-6">
-    
+
     <!-- Session Name -->
     <div class="space-y-2">
       <div class="flex items-center gap-2 text-lumina-text-muted">
         <Info class="h-4 w-4" />
-        <span class="text-xs uppercase tracking-wider font-medium">Session Name</span>
+        <span class="text-xs uppercase tracking-wider font-medium">Nome da Sessão</span>
       </div>
-      <h2 class="text-2xl font-bold text-lumina-text font-serif">{{ sessionName || 'Untitled Session' }}</h2>
+      <h2 class="text-2xl font-bold text-lumina-text font-serif">{{ sessionName || 'Sessão Sem Título' }}</h2>
     </div>
 
     <!-- Created Date -->
     <div class="space-y-2">
       <div class="flex items-center gap-2 text-lumina-text-muted">
         <Calendar class="h-4 w-4" />
-        <span class="text-xs uppercase tracking-wider font-medium">Created</span>
+        <span class="text-xs uppercase tracking-wider font-medium">Criado em</span>
       </div>
-      <p class="text-sm text-lumina-text">{{ new Date(createdAt).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
+      <p class="text-sm text-lumina-text">{{ new Date(createdAt).toLocaleDateString('pt-BR', {
+        year: 'numeric',
+        month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -40,17 +40,18 @@ const props = defineProps({
     <div class="space-y-2">
       <div class="flex items-center gap-2 text-lumina-text-muted">
         <Database class="h-4 w-4" />
-        <span class="text-xs uppercase tracking-wider font-medium">Storage Provider</span>
+        <span class="text-xs uppercase tracking-wider font-medium">Provedor de Armazenamento</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="px-2 py-1 rounded-md bg-lumina-bg border border-lumina-border text-xs font-mono text-lumina-text">
           {{ storageProvider }}
         </span>
       </div>
-      
+
       <!-- Cloudinary Config (if applicable) -->
-      <div v-if="storageProvider === 'cloudinary' && storageConfig.cloudName" class="mt-3 p-3 rounded-lg bg-lumina-bg/50 border border-lumina-border space-y-2">
-        <p class="text-xs text-lumina-text-muted font-medium">Configuration:</p>
+      <div v-if="storageProvider === 'cloudinary' && storageConfig.cloudName"
+        class="mt-3 p-3 rounded-lg bg-lumina-bg/50 border border-lumina-border space-y-2">
+        <p class="text-xs text-lumina-text-muted font-medium">Configuração:</p>
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div>
             <span class="text-lumina-text-muted">Cloud Name:</span>
