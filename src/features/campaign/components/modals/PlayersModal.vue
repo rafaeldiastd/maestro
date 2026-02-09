@@ -5,7 +5,6 @@ const props = defineProps({
   players: {
     type: Array,
     default: () => []
-    // Format: [{ id: 1, name: 'Player 1', status: 'online' }]
   }
 })
 </script>
